@@ -1,5 +1,6 @@
 import { createMockResult, isDreamMood } from "../../lib/dream";
 import { generateDreamResult } from "../../lib/gemini";
+import { checkRateLimit } from "../../lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +15,20 @@ export async function POST(request: Request) {
       return Response.json(
         { error: "꿈 내용을 조금 더 자세히 적어주세요." },
         { status: 400 },
+      );
+    }
+
+    // Gemini를 호출하기 전에 확인한다. 이미지 생성이 붙으면 1건당 비용이
+    // 40배가 되므로 이 가드가 결제 방어선이 된다.
+    const verdict = await checkRateLimit(request);
+
+    if (!verdict.allowed) {
+      return Response.json(
+        {
+          error:
+            "오늘의 해몽 횟수를 모두 사용했어요. 내일 다시 만나요.",
+        },
+        { status: 429 },
       );
     }
 

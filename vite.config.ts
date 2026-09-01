@@ -31,6 +31,15 @@ const localBindingConfig = {
         },
       ]
     : [],
+  // 레이트리밋 카운터. 배포 전에 실제 네임스페이스를 만들고 id를 채워야 한다:
+  //   npx wrangler kv namespace create dreamcore-rate-limit
+  // 로컬 개발은 Miniflare가 이 id를 무시하고 메모리로 시뮬레이션한다.
+  kv_namespaces: [
+    {
+      binding: "RATE_LIMIT",
+      id: process.env.RATE_LIMIT_KV_ID ?? "local-dev-placeholder",
+    },
+  ],
 };
 
 export default defineConfig(async () => {

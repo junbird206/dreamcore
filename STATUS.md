@@ -7,10 +7,10 @@
 - **브랜치:** main → `github.com/junbird206/dreamcore` (public)
 
 ## 지금 상태
-Gemini 해몽 **실호출 검증 완료** (`mode=gemini`, 약 2~4초). 이미지 생성·레이트리밋 미구현.
+Gemini 해몽 검증 완료 + 레이트리밋 구현 완료. **아직 배포 안 됨.** 배포 대상은 **Cloudflare Workers**(Netlify 아님 — vinext는 Workers 전용 빌드를 낸다).
 
 ## 방금 한 일
-- 모델 교체: `gemini-2.5-flash`는 신규 사용자에게 404(단종). → **`gemini-3.5-flash`**
-- Gemini 3.x는 `thinkingBudget`(숫자) 대신 `thinkingLevel`("low")을 받는다. 숫자 주면 400
-- 후보 모델 실측: 3.5-flash+low = 4.4초(품질 우수) / 3.1-flash-lite = 1.7초(분위기 반영 약함) → 품질 선택
-- 빌드된 워커에 실제 POST로 end-to-end 확인. lint/build/test 통과
+- `app/lib/rate-limit.ts` 신규 — IP당 하루 20회, 허용목록 IP는 무제한. KV 장애 시 fail-open
+- `app/api/dream/route.ts` — Gemini 호출 **전에** 검사, 초과 시 429 + 한국어 안내
+- `vite.config.ts` — `RATE_LIMIT` KV 바인딩 선언
+- `tests/rate-limit.test.mjs` 신규 (7개) + `npm test`가 `tests/*.test.mjs` 전체를 돌도록 변경. 총 10개 통과
