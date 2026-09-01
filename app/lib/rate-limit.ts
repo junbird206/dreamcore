@@ -1,21 +1,58 @@
 /**
- * IP 기준 일일 호출 제한.
+ * 일일 호출 제한. 두 겹으로 센다.
  *
- * Cloudflare KV에 "rl:{ip}:{한국날짜}" 키로 카운터를 둔다.
+ * 1. **브라우저 기준** (쿠키) — 실사용자 한도. 이게 주 방어선이다.
+ * 2. **IP 기준** — 스크립트 남용을 막는 천장. 한도를 높게 잡는다.
+ *
+ * IP만으로 세면 안 되는 이유: 국내 이동통신사는 CGNAT을 써서 수십~수백 명이
+ * 공인 IP 하나를 공유한다. 캠퍼스 와이파이도 NAT 뒤에 수천 명이 있다.
+ * IP당 한도를 낮게 잡으면 홍보 중에 아무 잘못 없는 학생이 차단된다.
+ *
  * KV가 없거나 오류가 나면 **통과시킨다(fail-open)** — 제한 장치의 장애로
  * 서비스 전체가 멈추는 쪽이 손해가 크다.
  */
 
-const DAILY_LIMIT = 20;
+/** 브라우저 하나가 하루에 쓸 수 있는 횟수. 실사용자 기준. */
+const BROWSER_DAILY_LIMIT = 20;
+
+/**
+ * IP 하나가 하루에 쓸 수 있는 횟수. CGNAT으로 IP를 공유하는 사용자를
+ * 막지 않도록 넉넉히 잡되, 스크립트 남용은 걸리도록 천장을 둔다.
+ */
+const IP_DAILY_LIMIT = 200;
+
 const KEY_TTL_SECONDS = 60 * 60 * 48; // 이틀 뒤 자동 삭제
+const COOKIE_NAME = "dc_bid";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 export type RateLimitVerdict = {
   allowed: boolean;
-  /** 남은 횟수. 무제한이면 null */
+  /** 브라우저 기준 남은 횟수. 무제한이거나 셀 수 없으면 null */
   remaining: number | null;
+  /** 새 브라우저면 응답에 실어야 할 Set-Cookie 값 */
+  setCookie: string | null;
 };
 
-const ALLOWED: RateLimitVerdict = { allowed: true, remaining: null };
+const ALLOWED: RateLimitVerdict = {
+  allowed: true,
+  remaining: null,
+  setCookie: null,
+};
+
+/** 이 프로젝트엔 @cloudflare/workers-types가 없어 쓰는 만큼만 선언한다. */
+type KvLike = {
+  get(key: string): Promise<string | null>;
+  put(
+    key: string,
+    value: string,
+    options?: { expirationTtl?: number },
+  ): Promise<void>;
+};
+
+type WorkerEnv = {
+  RATE_LIMIT?: KvLike;
+  RATE_LIMIT_ALLOWLIST_IPS?: string;
+};
 
 /** 한국 기준 날짜(YYYY-MM-DD). 자정에 카운터가 리셋되도록 KST를 쓴다. */
 function seoulDate() {
@@ -35,20 +72,26 @@ function clientIp(request: Request) {
   );
 }
 
-/** 이 프로젝트엔 @cloudflare/workers-types가 없어 쓰는 만큼만 선언한다. */
-type KvLike = {
-  get(key: string): Promise<string | null>;
-  put(
-    key: string,
-    value: string,
-    options?: { expirationTtl?: number },
-  ): Promise<void>;
-};
+function readBrowserId(request: Request) {
+  const cookie = request.headers.get("Cookie");
 
-type WorkerEnv = {
-  RATE_LIMIT?: KvLike;
-  RATE_LIMIT_ALLOWLIST_IPS?: string;
-};
+  if (!cookie) {
+    return null;
+  }
+
+  for (const part of cookie.split(";")) {
+    const [name, ...rest] = part.trim().split("=");
+    if (name === COOKIE_NAME && rest.length) {
+      const value = rest.join("=").trim();
+      // 임의 문자열이 키에 섞이지 않도록 형태를 확인한다.
+      if (/^[0-9a-f-]{36}$/.test(value)) {
+        return value;
+      }
+    }
+  }
+
+  return null;
+}
 
 async function readEnv(): Promise<WorkerEnv | null> {
   try {
@@ -59,7 +102,7 @@ async function readEnv(): Promise<WorkerEnv | null> {
   }
 }
 
-/** 무제한으로 통과시킬 IP 목록. 학교 와이파이처럼 NAT 뒤에 수천 명이 있는 경우용. */
+/** 무제한으로 통과시킬 IP 목록. 학교 와이파이 공인 IP 등. */
 function allowlist(env: WorkerEnv | null) {
   const raw =
     env?.RATE_LIMIT_ALLOWLIST_IPS ??
@@ -75,6 +118,21 @@ function allowlist(env: WorkerEnv | null) {
   );
 }
 
+/** 카운터를 하나 올린다. 한도를 넘었으면 null을 돌려준다. */
+async function bump(kv: KvLike, key: string, limit: number) {
+  const used = Number((await kv.get(key)) ?? 0);
+
+  if (used >= limit) {
+    return null;
+  }
+
+  // 원자적 증가가 아니라서 동시 요청이 몰리면 몇 회 새어나갈 수 있다.
+  // 남용 방지가 목적이라 이 정도 오차는 감수한다.
+  await kv.put(key, String(used + 1), { expirationTtl: KEY_TTL_SECONDS });
+
+  return limit - used - 1;
+}
+
 /**
  * @param injectedEnv 테스트에서 가짜 KV를 넣기 위한 통로.
  *   실제 런타임에서는 넘기지 않고 `cloudflare:workers`에서 읽는다.
@@ -83,16 +141,10 @@ export async function checkRateLimit(
   request: Request,
   injectedEnv?: WorkerEnv,
 ): Promise<RateLimitVerdict> {
+  const env = injectedEnv ?? (await readEnv());
   const ip = clientIp(request);
 
-  // IP를 못 읽으면 막을 근거가 없다. 통과시킨다.
-  if (!ip) {
-    return ALLOWED;
-  }
-
-  const env = injectedEnv ?? (await readEnv());
-
-  if (allowlist(env).has(ip)) {
+  if (ip && allowlist(env).has(ip)) {
     return ALLOWED;
   }
 
@@ -104,26 +156,39 @@ export async function checkRateLimit(
     return ALLOWED;
   }
 
-  const key = `rl:${ip}:${seoulDate()}`;
+  const existingId = readBrowserId(request);
+  const browserId = existingId ?? crypto.randomUUID();
+  const today = seoulDate();
+
+  const setCookie = existingId
+    ? null
+    : `${COOKIE_NAME}=${browserId}; Path=/; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; Secure; SameSite=Lax`;
 
   try {
-    const used = Number((await kv.get(key)) ?? 0);
+    // IP 천장을 먼저 본다. 쿠키를 지워가며 반복 호출하는 스크립트는 여기서 걸린다.
+    if (ip) {
+      const ipRemaining = await bump(kv, `rl:${ip}:${today}`, IP_DAILY_LIMIT);
 
-    if (used >= DAILY_LIMIT) {
-      return { allowed: false, remaining: 0 };
+      if (ipRemaining === null) {
+        return { allowed: false, remaining: 0, setCookie };
+      }
     }
 
-    // 원자적 증가가 아니라서 동시 요청이 몰리면 몇 회 새어나갈 수 있다.
-    // 남용 방지가 목적이라 이 정도 오차는 감수한다.
-    await kv.put(key, String(used + 1), {
-      expirationTtl: KEY_TTL_SECONDS,
-    });
+    const remaining = await bump(
+      kv,
+      `rlb:${browserId}:${today}`,
+      BROWSER_DAILY_LIMIT,
+    );
 
-    return { allowed: true, remaining: DAILY_LIMIT - used - 1 };
+    if (remaining === null) {
+      return { allowed: false, remaining: 0, setCookie };
+    }
+
+    return { allowed: true, remaining, setCookie };
   } catch (error) {
     console.error("[dreamcore] 레이트리밋 확인 실패:", error);
-    return ALLOWED;
+    return { ...ALLOWED, setCookie };
   }
 }
 
-export { DAILY_LIMIT };
+export { BROWSER_DAILY_LIMIT, IP_DAILY_LIMIT };

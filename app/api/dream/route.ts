@@ -22,13 +22,16 @@ export async function POST(request: Request) {
     // 40배가 되므로 이 가드가 결제 방어선이 된다.
     const verdict = await checkRateLimit(request);
 
+    // 새 브라우저에는 식별 쿠키를 내려준다. 차단 응답에도 실어야
+    // 다음 요청부터 같은 브라우저로 세어진다.
+    const headers = verdict.setCookie
+      ? { "Set-Cookie": verdict.setCookie }
+      : undefined;
+
     if (!verdict.allowed) {
       return Response.json(
-        {
-          error:
-            "오늘의 해몽 횟수를 모두 사용했어요. 내일 다시 만나요.",
-        },
-        { status: 429 },
+        { error: "오늘의 해몽 횟수를 모두 사용했어요. 내일 다시 만나요." },
+        { status: 429, headers },
       );
     }
 
@@ -40,6 +43,7 @@ export async function POST(request: Request) {
       generated
         ? { mode: "gemini", result: generated }
         : { mode: "mock", result: createMockResult(dream, mood) },
+      { headers },
     );
   } catch {
     return Response.json(

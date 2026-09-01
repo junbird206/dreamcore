@@ -10,7 +10,7 @@
 Gemini 해몽 검증 완료 + 레이트리밋 구현 완료. **아직 배포 안 됨.** 배포 대상은 **Cloudflare Workers**(Netlify 아님 — vinext는 Workers 전용 빌드를 낸다).
 
 ## 방금 한 일
-- `app/lib/rate-limit.ts` 신규 — IP당 하루 20회, 허용목록 IP는 무제한. KV 장애 시 fail-open
-- `app/api/dream/route.ts` — Gemini 호출 **전에** 검사, 초과 시 429 + 한국어 안내
-- `vite.config.ts` — `RATE_LIMIT` KV 바인딩 선언
-- `tests/rate-limit.test.mjs` 신규 (7개) + `npm test`가 `tests/*.test.mjs` 전체를 돌도록 변경. 총 10개 통과
+- 레이트리밋을 **2겹**으로 재설계: 쿠키 기준 브라우저당 20회(주 방어선) + IP당 200회(스크립트 천장)
+  - IP만으로 세면 국내 이통사 CGNAT·캠퍼스 NAT 때문에 진짜 유저가 차단된다
+- 새 브라우저에 `dc_bid` 쿠키 발급(HttpOnly/Secure/SameSite=Lax). 차단 응답에도 실어 보낸다
+- 테스트 14개 통과 (레이트리밋 11개)
