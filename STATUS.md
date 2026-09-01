@@ -7,16 +7,18 @@
 - **브랜치:** main → `github.com/junbird206/dreamcore` (public)
 
 ## 지금 상태
-1단계 Mock 모드 MVP 동작 중. AI 미연동, DB 미사용. 초기 커밋 완료(`8e34ec1`).
+Gemini 해몽 연동 **코드 완료**, 실제 응답은 **미검증**(API 키 없음). 키가 없으면 mock으로 폴백하므로 앱은 정상 동작.
 
 ## 방금 한 일
-- 코드베이스 전체 파악, 에이전트 인수인계 규약 수립 (`STATUS.md` / `AGENTS.md` / `CLAUDE.md`)
-- 초기 커밋 + GitHub 원격 연결 및 push (34개 파일)
+- `app/lib/gemini.ts` 신규 — gemini-2.5-flash 호출, JSON 스키마 강제, 응답 검증. 실패 시 `null` 반환
+- `app/api/dream/route.ts` — Gemini 우선, 실패/무키 시 `createMockResult()` 폴백. 응답 `mode`가 `"gemini"` / `"mock"`
+- `.gitignore`에 `.dev.vars` 추가 (public 저장소라 키 유출 방지)
+- lint / build / test 3개 통과
 
 ## 다음 스텝 (우선순위)
-1. **Gemini 해몽 연동** — `app/api/dream/route.ts`의 `createMockResult()`를 실제 호출로 교체.
-   `GOOGLE_AI_API_KEY`는 `.env`(gitignore됨)에 두고, Workers 배포 시엔 Wrangler secret으로.
-   응답 형식은 기존 `DreamResult` 타입(`app/lib/dream.ts`)을 그대로 유지해야 UI가 안 깨진다.
+1. **Gemini 실호출 검증 (막힘 — 사용자 액션 필요)** — `GOOGLE_AI_API_KEY`가 없어서 실제 응답을 못 봤다.
+   aistudio.google.com에서 키 발급 → `.env`에 `GOOGLE_AI_API_KEY=...` → 응답 품질·지연 확인.
+   Workers 배포 시엔 `wrangler secret put GOOGLE_AI_API_KEY`. 키를 코드에 넣지 말 것.
 2. **Nano Banana 이미지 생성** — `DreamLab.tsx`의 mock 타일(`.generated-image`)을 실제 이미지로 교체.
    `result.prompt`가 이미 생성돼 있으니 그걸 입력으로 쓴다.
 3. **`NEXT_PUBLIC_SIGNUP_URL` 채우기** — 지금 비어 있어서 CTA가 `#signup-url-needed`로 떨어진다.

@@ -38,3 +38,7 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+
+# cloudflare local dev vars
+.dev.vars
+.dev.vars.*
