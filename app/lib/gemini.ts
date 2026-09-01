@@ -1,13 +1,15 @@
 import type { DreamMood, DreamResult } from "./dream";
 import { moods } from "./dream";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const TIMEOUT_MS = 15_000;
 
-// 해몽은 창작에 가까운 짧은 텍스트라 사고 과정이 필요 없다.
-// 응답 지연을 줄이려고 꺼둔다. 품질이 아쉬우면 이 값을 올릴 것.
-const THINKING_BUDGET = 0;
+// 해몽은 창작에 가까운 짧은 텍스트라 깊은 사고가 필요 없다.
+// "low"에서 평균 4.4초 / 형식 준수 100%로 측정됨. 지연이 문제면 모델을
+// gemini-3.1-flash-lite로 내리면 1.7초까지 떨어진다(대신 분위기 반영이 약함).
+// Gemini 3.x는 thinkingBudget 대신 thinkingLevel을 받는다. 숫자를 넣으면 400.
+const THINKING_LEVEL = "low";
 
 const RESPONSE_SCHEMA = {
   type: "OBJECT",
@@ -146,7 +148,7 @@ export async function generateDreamResult(
           responseMimeType: "application/json",
           responseSchema: RESPONSE_SCHEMA,
           temperature: 1,
-          thinkingConfig: { thinkingBudget: THINKING_BUDGET },
+          thinkingConfig: { thinkingLevel: THINKING_LEVEL },
         },
       }),
     });
