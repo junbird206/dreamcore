@@ -205,7 +205,8 @@ textarea {
 }
 
 .generated-image {
-  min-height: 280px;
+  /* 자리 표시 타일도 실제 이미지와 같은 비율로 둬야 교체 시 레이아웃이 안 튄다. */
+  aspect-ratio: 3 / 4;
   background:
     linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent 60%),
     radial-gradient(circle at 63% 18%, #f8eaa7 0 13%, transparent 14%),
@@ -216,8 +217,8 @@ textarea {
 .generated-image-real {
   display: block;
   width: 100%;
-  min-height: 280px;
-  max-height: 340px;
+  /* 생성 이미지와 같은 3:4로 맞춰 잘리는 부분이 없게 한다. */
+  aspect-ratio: 3 / 4;
   object-fit: cover;
   border-radius: 8px;
   background: #10211f;

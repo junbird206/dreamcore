@@ -5,13 +5,16 @@
  * 실패하면 null을 반환한다 — 호출부는 이미지 없이 해몽만 보여준다.
  *
  * 주의: 이미지 모델은 Gemini API **무료 등급에서 제공되지 않는다.**
- * 결제(Tier 1)를 켜지 않으면 모든 호출이 즉시 429로 떨어진다.
+ * 결제(Tier 1)가 아니면 모든 호출이 즉시 429로 떨어진다.
  */
 
-// TODO(결제 활성화 후): 후보 모델을 실측해서 확정할 것.
-// 목록에 있는 후보: gemini-3.1-flash-image, gemini-2.5-flash-image,
-// nano-banana-pro-preview, gemini-3-pro-image
-const MODEL = "gemini-3.1-flash-image";
+// 후보 3종을 같은 프롬프트로 실측해서 고른 값(2026-09-06).
+//   lite  3.3초 / 47원   ← 채택
+//   flash 11.8초 / 94원  (No text 지시를 어기고 벽에 룬 문자를 그림)
+//   pro   18.9초 / 188원 (가장 깔끔하지만 표시 크기 230px에서는 차이가 거의 안 보임)
+// 해몽 텍스트가 4초라 lite여야 총 대기가 7초로 끝난다. pro면 23초다.
+// 이미지를 크게 보여주게 되면 그때 pro로 올릴 것.
+const MODEL = "gemini-3.1-flash-lite-image";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 // 이미지 생성은 텍스트보다 오래 걸린다. 텍스트(15초)보다 넉넉히 잡는다.
@@ -56,6 +59,9 @@ export async function generateDreamImage(
       signal: AbortSignal.timeout(TIMEOUT_MS),
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
+        // 기본값은 1408x768 가로형인데 표시 타일은 세로형이라 절반이 잘린다.
+        // 3:4(896x1200)로 뽑아야 잘림 없이 다 보이고, 공유 카드(1080x1350)와도 맞는다.
+        generationConfig: { imageConfig: { aspectRatio: "3:4" } },
       }),
     });
 
