@@ -212,6 +212,22 @@ textarea {
     linear-gradient(150deg, #0e1518 0%, #226356 50%, #ba8755 100%);
 }
 
+/* 실제 생성된 이미지. 자리 표시 타일과 크기를 맞춰 교체 시 레이아웃이 안 튀게 한다. */
+.generated-image-real {
+  display: block;
+  width: 100%;
+  min-height: 280px;
+  max-height: 340px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #10211f;
+}
+
+/* 이미지를 기다리는 동안에는 자리 표시 타일이 살아있게 보이도록 한다. */
+.generated-image-pending {
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
 .generated-image p {
   position: absolute;
   bottom: 16px;

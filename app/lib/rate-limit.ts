@@ -12,14 +12,19 @@
  * 서비스 전체가 멈추는 쪽이 손해가 크다.
  */
 
-/** 브라우저 하나가 하루에 쓸 수 있는 횟수. 실사용자 기준. */
-const BROWSER_DAILY_LIMIT = 20;
-
 /**
- * IP 하나가 하루에 쓸 수 있는 횟수. CGNAT으로 IP를 공유하는 사용자를
- * 막지 않도록 넉넉히 잡되, 스크립트 남용은 걸리도록 천장을 둔다.
+ * 종류별 하루 한도.
+ *
+ * 텍스트 해몽과 이미지 생성은 단가가 40배 차이난다(약 1.5원 vs 55원).
+ * 같은 한도를 쓰면 이미지가 비용을 지배하므로 따로 센다.
+ * browser는 실사용자 한도, ip는 스크립트 남용을 막는 천장이다.
  */
-const IP_DAILY_LIMIT = 200;
+const LIMITS = {
+  dream: { browser: 20, ip: 200 },
+  image: { browser: 4, ip: 40 },
+} as const;
+
+export type RateLimitKind = keyof typeof LIMITS;
 
 const KEY_TTL_SECONDS = 60 * 60 * 48; // 이틀 뒤 자동 삭제
 const COOKIE_NAME = "dc_bid";
@@ -139,6 +144,7 @@ async function bump(kv: KvLike, key: string, limit: number) {
  */
 export async function checkRateLimit(
   request: Request,
+  kind: RateLimitKind,
   injectedEnv?: WorkerEnv,
 ): Promise<RateLimitVerdict> {
   const env = injectedEnv ?? (await readEnv());
@@ -159,6 +165,7 @@ export async function checkRateLimit(
   const existingId = readBrowserId(request);
   const browserId = existingId ?? crypto.randomUUID();
   const today = seoulDate();
+  const limit = LIMITS[kind];
 
   const setCookie = existingId
     ? null
@@ -167,7 +174,7 @@ export async function checkRateLimit(
   try {
     // IP 천장을 먼저 본다. 쿠키를 지워가며 반복 호출하는 스크립트는 여기서 걸린다.
     if (ip) {
-      const ipRemaining = await bump(kv, `rl:${ip}:${today}`, IP_DAILY_LIMIT);
+      const ipRemaining = await bump(kv, `rl:${kind}:${ip}:${today}`, limit.ip);
 
       if (ipRemaining === null) {
         return { allowed: false, remaining: 0, setCookie };
@@ -176,8 +183,8 @@ export async function checkRateLimit(
 
     const remaining = await bump(
       kv,
-      `rlb:${browserId}:${today}`,
-      BROWSER_DAILY_LIMIT,
+      `rlb:${kind}:${browserId}:${today}`,
+      limit.browser,
     );
 
     if (remaining === null) {
@@ -191,4 +198,4 @@ export async function checkRateLimit(
   }
 }
 
-export { BROWSER_DAILY_LIMIT, IP_DAILY_LIMIT };
+export { LIMITS };

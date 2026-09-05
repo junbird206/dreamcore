@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     // Gemini를 호출하기 전에 확인한다. 이미지 생성이 붙으면 1건당 비용이
     // 40배가 되므로 이 가드가 결제 방어선이 된다.
-    const verdict = await checkRateLimit(request);
+    const verdict = await checkRateLimit(request, "dream");
 
     // 새 브라우저에는 식별 쿠키를 내려준다. 차단 응답에도 실어야
     // 다음 요청부터 같은 브라우저로 세어진다.

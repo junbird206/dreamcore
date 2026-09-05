@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { DreamMood, DreamResult, moods, starterDream } from "./lib/dream";
 
 type ShareStatus = "idle" | "copied" | "downloaded" | "shared" | "failed";
+type ImageState = "idle" | "loading" | "ready" | "failed";
 
 declare global {
   interface Window {
@@ -104,6 +105,8 @@ export function DreamLab() {
   const [isLoading, setIsLoading] = useState(false);
   const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [imageState, setImageState] = useState<ImageState>("idle");
 
   const wordCount = useMemo(() => {
     return dream.trim() ? dream.trim().split(/\s+/).length : 0;
@@ -150,6 +153,8 @@ export function DreamLab() {
     setResult(null);
     setShareStatus("idle");
     setErrorMessage("");
+    setImage(null);
+    setImageState("idle");
     track("dream_submit", { mood, length: dream.trim().length });
 
     try {
@@ -172,7 +177,10 @@ export function DreamLab() {
 
       setResult(payload.result);
       track("interpretation_generated", { mood, mode: payload.mode ?? "mock" });
-      track("image_generated", { mode: payload.mode ?? "mock" });
+
+      // 해몽을 먼저 보여주고 이미지는 뒤이어 채운다. 묶어서 기다리게 하면
+      // 사용자가 20초 넘게 빈 화면을 본다.
+      void requestImage(payload.result.prompt);
     } catch (error) {
       const message =
         error instanceof Error
@@ -182,6 +190,34 @@ export function DreamLab() {
       track("api_error", { stage: "dream_api" });
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function requestImage(prompt: string) {
+    setImageState("loading");
+
+    try {
+      const response = await fetch("/api/dream/image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        image?: string;
+      };
+
+      if (!response.ok || !payload.image) {
+        throw new Error(payload.error ?? "이미지를 만들지 못했습니다.");
+      }
+
+      setImage(payload.image);
+      setImageState("ready");
+      track("image_generated");
+    } catch {
+      // 이미지는 실패해도 해몽은 그대로 보여준다. 에러 배너는 띄우지 않는다.
+      setImageState("failed");
+      track("api_error", { stage: "image_api" });
     }
   }
 
@@ -391,11 +427,31 @@ export function DreamLab() {
               {result ? (
                 <div className="grid gap-5 lg:grid-cols-[230px_1fr]">
                   <div className="space-y-3">
-                    <div className="generated-image">
-                      <div className="generated-moon" />
-                      <div className="generated-door" />
-                      <p>Mock image</p>
-                    </div>
+                    {imageState === "ready" && image ? (
+                      // base64 data URI라 next/image 최적화가 적용되지 않는다.
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        alt={`${result.title} — 꿈 장면 이미지`}
+                        className="generated-image-real"
+                        src={image}
+                      />
+                    ) : (
+                      <div
+                        className={
+                          imageState === "failed"
+                            ? "generated-image"
+                            : "generated-image generated-image-pending"
+                        }
+                      >
+                        <div className="generated-moon" />
+                        <div className="generated-door" />
+                        <p>
+                          {imageState === "failed"
+                            ? "이미지를 만들지 못했어요"
+                            : "꿈 장면 그리는 중"}
+                        </p>
+                      </div>
+                    )}
                     <div className="share-card-preview">
                       <p>Dreamcore</p>
                       <strong>{result.title}</strong>
