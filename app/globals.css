@@ -270,12 +270,28 @@ textarea {
   gap: 8px;
   overflow: hidden;
   border-radius: 8px;
-  background:
-    linear-gradient(to top, rgba(0, 0, 0, 0.78), transparent 72%),
+  /* 이미지가 붙으면 인라인 style이 background-image만 덮어쓰므로
+     스크림은 별도 레이어(::before)로 둔다. */
+  background-color: #101315;
+  background-image:
     radial-gradient(circle at 74% 20%, #f8eaa7 0 9%, transparent 10%),
     linear-gradient(135deg, #101315, #236559 58%, #b98756);
+  background-position: center;
+  background-size: cover;
+  position: relative;
   padding: 16px;
   color: #ffffff;
+}
+
+.share-card-preview::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82), transparent 72%);
+}
+
+.share-card-preview > * {
+  position: relative;
 }
 
 .share-card-preview p,

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { DreamMood, DreamResult, moods, starterDream } from "./lib/dream";
+import { renderShareCard } from "./lib/share-card";
 
 type ShareStatus = "idle" | "copied" | "downloaded" | "shared" | "failed";
 type ImageState = "idle" | "loading" | "ready" | "failed";
@@ -27,75 +28,8 @@ function track(eventName: string, data?: Record<string, string | number>) {
   window.gtag?.("event", eventName, data ?? {});
 }
 
-function escapeSvgText(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
-function wrapText(value: string, maxLength: number) {
-  const words = value.split(/\s+/);
-  const lines: string[] = [];
-  let current = "";
-
-  words.forEach((word) => {
-    const next = current ? `${current} ${word}` : word;
-    if (next.length > maxLength && current) {
-      lines.push(current);
-      current = word;
-      return;
-    }
-
-    current = next;
-  });
-
-  if (current) {
-    lines.push(current);
-  }
-
-  return lines.slice(0, 4);
-}
-
 function buildShareText(result: DreamResult) {
   return `내 꿈 해몽: ${result.title}\n\n${result.insight}\n\nDreamcore에서 내 꿈 이미지 만들기`;
-}
-
-function buildShareCardSvg(result: DreamResult) {
-  const lines = wrapText(result.insight, 28);
-  const symbolText = result.symbols.map((symbol) => `#${symbol}`).join("  ");
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
-  <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#101315"/>
-      <stop offset="0.48" stop-color="#236559"/>
-      <stop offset="1" stop-color="#b98756"/>
-    </linearGradient>
-    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000000" stop-opacity="0.76"/>
-    </linearGradient>
-  </defs>
-  <rect width="1080" height="1350" fill="#f7f3ea"/>
-  <rect x="54" y="54" width="972" height="1242" rx="28" fill="url(#sky)"/>
-  <circle cx="780" cy="235" r="104" fill="#f8eaa7"/>
-  <circle cx="780" cy="235" r="146" fill="#f8eaa7" opacity="0.14"/>
-  <path d="M240 470h132v520H240zM474 410h132v580H474zM708 470h132v520H708z" fill="#0d1514" opacity="0.38" stroke="#ffffff" stroke-opacity="0.28" stroke-width="3"/>
-  <rect x="54" y="700" width="972" height="596" fill="url(#fade)"/>
-  <text x="104" y="142" fill="#9ee4d6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="5">DREAMCORE</text>
-  <text x="104" y="910" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="800">${escapeSvgText(result.title)}</text>
-  ${lines
-    .map(
-      (line, index) =>
-        `<text x="104" y="${1006 + index * 48}" fill="#f8f3e8" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="500">${escapeSvgText(line)}</text>`,
-    )
-    .join("")}
-  <text x="104" y="1220" fill="#9ee4d6" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">${escapeSvgText(symbolText)}</text>
-  <text x="104" y="1268" fill="#ffffff" fill-opacity="0.78" font-family="Arial, Helvetica, sans-serif" font-size="24">꿈을 적으면 AI가 해몽과 이미지를 만들어줍니다</text>
-</svg>`;
 }
 
 export function DreamLab() {
@@ -240,27 +174,38 @@ export function DreamLab() {
     }
   }
 
-  function handleDownloadCard() {
+  async function handleDownloadCard() {
     if (!result) {
       return;
     }
 
-    const svg = buildShareCardSvg(result);
-    const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+    const blob = await renderShareCard(result, image);
+
+    if (!blob) {
+      setShareStatus("failed");
+      track("share_failed", { action: "download" });
+      return;
+    }
+
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `dreamcore-${Date.now()}.svg`;
+    anchor.download = `dreamcore-${Date.now()}.jpg`;
     document.body.append(anchor);
     anchor.click();
     anchor.remove();
     URL.revokeObjectURL(url);
     setShareStatus("downloaded");
-    track("image_downloaded", { format: "svg", mode: "mock" });
+    track("image_downloaded", { format: "jpg", withImage: image ? 1 : 0 });
   }
 
   async function handleNativeShare() {
     if (!result) {
+      return;
+    }
+
+    if (!navigator.share) {
+      await handleCopyResult();
       return;
     }
 
@@ -270,15 +215,26 @@ export function DreamLab() {
       url: window.location.href,
     };
 
-    if (!navigator.share) {
-      await handleCopyResult();
-      return;
-    }
-
     try {
+      // 이미지가 붙어야 인스타그램·카카오톡으로 바로 넘길 수 있다.
+      // 파일 공유를 지원하지 않는 브라우저에서는 텍스트+링크로 떨어진다.
+      const blob = await renderShareCard(result, image);
+      const file = blob
+        ? new File([blob], `dreamcore-${Date.now()}.jpg`, {
+            type: "image/jpeg",
+          })
+        : null;
+
+      if (file && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ ...shareData, files: [file] });
+        setShareStatus("shared");
+        track("share_clicked", { mode: "native_file" });
+        return;
+      }
+
       await navigator.share(shareData);
       setShareStatus("shared");
-      track("share_clicked", { mode: "native" });
+      track("share_clicked", { mode: "native_text" });
     } catch {
       setShareStatus("failed");
       track("share_failed", { action: "native" });
@@ -452,7 +408,15 @@ export function DreamLab() {
                         </p>
                       </div>
                     )}
-                    <div className="share-card-preview">
+                    <div
+                      className="share-card-preview"
+                      // 실제로 저장되는 카드와 같은 배경을 보여준다.
+                      style={
+                        image
+                          ? { backgroundImage: `url(${image})` }
+                          : undefined
+                      }
+                    >
                       <p>Dreamcore</p>
                       <strong>{result.title}</strong>
                       <span>{result.symbols.map((symbol) => `#${symbol}`).join(" ")}</span>
