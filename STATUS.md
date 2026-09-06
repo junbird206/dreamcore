@@ -5,12 +5,13 @@
 
 - **마지막 갱신:** 2026-09-01 / Claude
 - **브랜치:** main → `github.com/junbird206/dreamcore` (public)
+- **배포:** https://dreamcore.junbird521.workers.dev (Cloudflare Workers)
 
 ## 지금 상태
-**해몽 + 이미지 생성 모두 동작.** Gemini API 결제 활성화됨(Tier 1, 월 한도 ₩50,000). 남은 건 배포뿐.
+**배포 완료. 라이브에서 해몽·이미지·GA·쿠키 전부 동작 확인.**
+https://dreamcore.junbird521.workers.dev
 
 ## 방금 한 일
-- 이미지 모델 확정: **`gemini-3.1-flash-lite-image`** (3.3초 / 약 47원). flash·pro와 실측 비교 후 선택
-- 종횡비를 **3:4(896x1200)**로 지정 — 기본 가로형(1408x768)은 세로 타일에서 55%가 잘렸다
-- CSS 타일도 3:4로 맞춰 잘림 0%(`visibleFraction 1.00`) 확인
-- 프로덕션 빌드로 브라우저에서 해몽→이미지 전체 흐름 확인. 총 대기 약 7초
+- GA4 측정 ID `G-Z2ECYF1JSD`를 `.env`에 넣고 빌드 → 번들에 박힌 것 확인
+- Cloudflare Workers 배포. `wrangler secret put GOOGLE_AI_API_KEY`로 서버 키 등록
+- 라이브 검증: 해몽 3.7초(`mode: gemini`) / 이미지 4.7초(896x1200) / `dc_bid` 쿠키 / GA·sign-up URL 번들 포함
