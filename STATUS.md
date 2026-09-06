@@ -12,6 +12,8 @@
 https://dreamcore.junbird521.workers.dev
 
 ## 방금 한 일
-- GA4 측정 ID `G-Z2ECYF1JSD`를 `.env`에 넣고 빌드 → 번들에 박힌 것 확인
-- Cloudflare Workers 배포. `wrangler secret put GOOGLE_AI_API_KEY`로 서버 키 등록
-- 라이브 검증: 해몽 3.7초(`mode: gemini`) / 이미지 4.7초(896x1200) / `dc_bid` 쿠키 / GA·sign-up URL 번들 포함
+- 공유 카드를 canvas 기반 **JPEG**로 교체하고 생성 이미지를 배경으로 깔았다.
+  SVG는 인스타·카톡이 못 받아 공유 경로가 막혀 있었다. 2,088KB → 239KB
+- 공유하기가 `canShare`로 파일 지원을 확인해 이미지를 첨부한다(모바일에서 인스타로 바로)
+- **음성 입력 추가** (`app/lib/speech.ts`, Web Speech API, `ko-KR`).
+  미지원 브라우저(Firefox)에서는 버튼이 숨는다. 침묵으로 끊기면 자동 재시작
