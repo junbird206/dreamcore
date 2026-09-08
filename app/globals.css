@@ -39,10 +39,19 @@ textarea {
 }
 
 .dream-sky {
+  /* 아래로 갈수록 어둡게 덮어 흰 글씨(제목·지표)가 읽히게 한다. */
   background:
-    radial-gradient(circle at 68% 18%, rgba(250, 232, 160, 0.95) 0 6%, transparent 7%),
-    radial-gradient(circle at 20% 28%, rgba(111, 208, 189, 0.3), transparent 24%),
-    linear-gradient(145deg, #111214 0%, #203f39 42%, #745c3e 100%);
+    linear-gradient(
+      to top,
+      rgba(8, 12, 13, 0.92) 0%,
+      rgba(8, 12, 13, 0.55) 34%,
+      rgba(8, 12, 13, 0.12) 62%,
+      transparent 100%
+    ),
+    url("/hero.jpg");
+  background-position: center 22%;
+  background-size: cover;
+  background-color: #0b1113;
 }
 
 .dream-visual::before {
@@ -60,37 +69,8 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-.moon {
-  position: absolute;
-  right: 18%;
-  top: 13%;
-  width: clamp(80px, 13vw, 160px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #f8eaa7;
-  box-shadow: 0 0 70px rgba(248, 234, 167, 0.48);
-  z-index: 1;
-}
 
-.corridor {
-  position: absolute;
-  inset: 22% 11% 11%;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  opacity: 0.72;
-  transform: perspective(800px) rotateX(9deg);
-  z-index: 1;
-}
 
-.corridor span {
-  display: block;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  border-bottom: 0;
-  background:
-    linear-gradient(to top, rgba(0, 0, 0, 0.46), transparent),
-    linear-gradient(110deg, rgba(255, 255, 255, 0.16), transparent 45%);
-}
 
 .dream-metrics {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -169,21 +149,19 @@ textarea {
   min-height: 180px;
   overflow: hidden;
   border-radius: 8px;
-  background:
-    radial-gradient(circle at 68% 28%, #f7e49d 0 11%, transparent 12%),
-    linear-gradient(140deg, #10211f, #426f65 54%, #b88b55);
+  background-color: #10211f;
+  background-position: center;
+  background-size: cover;
 }
 
-.mock-tile span {
-  position: absolute;
-  left: 26%;
-  bottom: -20px;
-  width: 48%;
-  height: 78%;
-  border: 1px solid rgba(255, 255, 255, 0.36);
-  border-bottom: 0;
-  background: rgba(0, 0, 0, 0.22);
+.mock-tile {
+  background-image: url("/dream-tile.jpg");
 }
+
+.loading-image {
+  background-image: url("/dream-placeholder.jpg");
+}
+
 
 .loading-state {
   display: grid;
@@ -207,10 +185,9 @@ textarea {
 .generated-image {
   /* 자리 표시 타일도 실제 이미지와 같은 비율로 둬야 교체 시 레이아웃이 안 튄다. */
   aspect-ratio: 3 / 4;
-  background:
-    linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent 60%),
-    radial-gradient(circle at 63% 18%, #f8eaa7 0 13%, transparent 14%),
-    linear-gradient(150deg, #0e1518 0%, #226356 50%, #ba8755 100%);
+  background-image:
+    linear-gradient(to top, rgba(0, 0, 0, 0.66), transparent 62%),
+    url("/dream-placeholder.jpg");
 }
 
 /* 실제 생성된 이미지. 자리 표시 타일과 크기를 맞춰 교체 시 레이아웃이 안 튀게 한다. */
@@ -239,29 +216,7 @@ textarea {
   text-transform: uppercase;
 }
 
-.generated-moon {
-  position: absolute;
-  right: 24px;
-  top: 24px;
-  width: 74px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #f8eaa7;
-  box-shadow: 0 0 54px rgba(248, 234, 167, 0.5);
-}
 
-.generated-door {
-  position: absolute;
-  left: 28%;
-  bottom: 0;
-  width: 38%;
-  height: 68%;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-bottom: 0;
-  background:
-    linear-gradient(to top, rgba(0, 0, 0, 0.52), transparent),
-    linear-gradient(130deg, rgba(255, 255, 255, 0.2), transparent 44%);
-}
 
 .share-card-preview {
   display: grid;
@@ -273,9 +228,7 @@ textarea {
   /* 이미지가 붙으면 인라인 style이 background-image만 덮어쓰므로
      스크림은 별도 레이어(::before)로 둔다. */
   background-color: #101315;
-  background-image:
-    radial-gradient(circle at 74% 20%, #f8eaa7 0 9%, transparent 10%),
-    linear-gradient(135deg, #101315, #236559 58%, #b98756);
+  background-image: url("/dream-tile.jpg");
   background-position: center;
   background-size: cover;
   position: relative;
@@ -350,10 +303,6 @@ textarea {
 
   .dream-visual {
     border-radius: 8px;
-  }
-
-  .corridor {
-    inset: 26% 8% 12%;
   }
 }
 

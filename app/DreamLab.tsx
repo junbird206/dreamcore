@@ -267,13 +267,6 @@ export function DreamLab() {
         <aside className="dream-visual relative flex min-h-[340px] min-w-0 overflow-hidden rounded-[8px] bg-[#141313] p-6 text-white md:min-h-[calc(100vh-40px)] md:p-8">
           <div className="absolute inset-0 dream-sky" />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
-          <div className="moon" />
-          <div className="corridor">
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
           <div className="relative z-10 mt-auto max-w-lg">
             <p className="mb-3 max-w-[250px] text-xs font-semibold uppercase text-[#9ee4d6] sm:max-w-none sm:text-sm">
               Google Student Ambassador 2026
@@ -402,9 +395,7 @@ export function DreamLab() {
                       실제 호출로 교체합니다.
                     </p>
                   </div>
-                  <div className="mock-tile" aria-hidden="true">
-                    <span />
-                  </div>
+                  <div className="mock-tile" aria-hidden="true" />
                 </div>
               ) : null}
 
@@ -444,8 +435,6 @@ export function DreamLab() {
                             : "generated-image generated-image-pending"
                         }
                       >
-                        <div className="generated-moon" />
-                        <div className="generated-door" />
                         <p>
                           {imageState === "failed"
                             ? "이미지를 만들지 못했어요"
