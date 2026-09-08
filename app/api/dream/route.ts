@@ -1,4 +1,8 @@
-import { createMockResult, isDreamMood } from "../../lib/dream";
+import {
+  createMockResult,
+  defaultStyle,
+  isDreamStyle,
+} from "../../lib/dream";
 import { generateDreamResult } from "../../lib/gemini";
 import { checkRateLimit } from "../../lib/rate-limit";
 
@@ -6,10 +10,10 @@ export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as {
       dream?: string;
-      mood?: unknown;
+      style?: unknown;
     };
     const dream = payload.dream?.trim() ?? "";
-    const mood = isDreamMood(payload.mood) ? payload.mood : "mystic";
+    const style = isDreamStyle(payload.style) ? payload.style : defaultStyle;
 
     if (dream.length < 20) {
       return Response.json(
@@ -37,12 +41,12 @@ export async function POST(request: Request) {
 
     // 키가 없거나 호출이 실패하면 null이 온다. 사용자에게 에러를 띄우는 대신
     // mock 결과로 조용히 폴백한다 — 화면이 비는 편이 손해가 크다.
-    const generated = await generateDreamResult(dream, mood);
+    const generated = await generateDreamResult(dream, style);
 
     return Response.json(
       generated
         ? { mode: "gemini", result: generated }
-        : { mode: "mock", result: createMockResult(dream, mood) },
+        : { mode: "mock", result: createMockResult(dream, style) },
       { headers },
     );
   } catch {

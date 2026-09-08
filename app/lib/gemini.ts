@@ -1,5 +1,5 @@
-import type { DreamMood, DreamResult } from "./dream";
-import { moods } from "./dream";
+import type { DreamResult, DreamStyle } from "./dream";
+import { findStyle } from "./dream";
 
 const MODEL = "gemini-3.5-flash";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
@@ -39,20 +39,22 @@ const SYSTEM_INSTRUCTION = `당신은 꿈의 상징을 읽어주는 한국어 �
 - palette: 이 꿈의 분위기를 나타내는 색 3~4개. 영어 소문자 쉼표 구분 (예: "violet, deep green, moonlit silver").
 - prompt: 이 꿈을 이미지로 생성하기 위한 영어 프롬프트. 꿈의 구체적 장면을 묘사하고 "No text in the image."로 끝냅니다.`;
 
-function moodDirective(mood: DreamMood) {
-  const selected = moods.find((item) => item.id === mood) ?? moods[0];
-  return `${selected.label} (${selected.description})`;
-}
+function buildUserPrompt(dream: string, style: DreamStyle) {
+  const selected = findStyle(style);
 
-function buildUserPrompt(dream: string, mood: DreamMood) {
   return `다음은 사용자가 적은 꿈입니다.
 
 """
 ${dream.trim()}
 """
 
-원하는 분위기: ${moodDirective(mood)}
-이 분위기를 insight의 어조와 palette, prompt에 반영해주세요.`;
+사용자가 고른 화풍: ${selected.label} (${selected.hint})
+이미지 생성용 영어 지시: ${selected.prompt}
+
+prompt 필드에는 위 영어 지시를 반드시 그대로 포함시키고, 꿈의 장면 묘사와
+자연스럽게 이어 붙여 주세요. palette도 이 화풍에 맞게 정해주세요.
+insight는 화풍이 아니라 **꿈 내용만** 보고 쓰세요 — 화풍은 사용자가 고른
+표현 방식일 뿐 꿈에서 본 것이 아닙니다.`;
 }
 
 /**
@@ -121,7 +123,7 @@ function parseResult(raw: unknown): DreamResult | null {
  */
 export async function generateDreamResult(
   dream: string,
-  mood: DreamMood,
+  style: DreamStyle,
 ): Promise<DreamResult | null> {
   const apiKey = await readApiKey();
 
@@ -141,7 +143,7 @@ export async function generateDreamResult(
         contents: [
           {
             role: "user",
-            parts: [{ text: buildUserPrompt(dream, mood) }],
+            parts: [{ text: buildUserPrompt(dream, style) }],
           },
         ],
         generationConfig: {

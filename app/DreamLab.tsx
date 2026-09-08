@@ -1,7 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { DreamMood, DreamResult, moods, starterDream } from "./lib/dream";
+import {
+  DreamResult,
+  DreamStyle,
+  defaultStyle,
+  findStyle,
+  starterDream,
+  styles,
+} from "./lib/dream";
 import { renderShareCard } from "./lib/share-card";
 import { useSpeechInput } from "./lib/speech";
 
@@ -35,7 +42,7 @@ function buildShareText(result: DreamResult) {
 
 export function DreamLab() {
   const [dream, setDream] = useState(starterDream);
-  const [mood, setMood] = useState<DreamMood>("mystic");
+  const [style, setStyle] = useState<DreamStyle>(defaultStyle);
   const [result, setResult] = useState<DreamResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
@@ -53,7 +60,7 @@ export function DreamLab() {
     return dream.trim() ? dream.trim().split(/\s+/).length : 0;
   }, [dream]);
 
-  const selectedMood = moods.find((item) => item.id === mood) ?? moods[0];
+  const selectedStyle = findStyle(style);
   const signupUrl = process.env.NEXT_PUBLIC_SIGNUP_URL;
 
   useEffect(() => {
@@ -96,7 +103,7 @@ export function DreamLab() {
     setErrorMessage("");
     setImage(null);
     setImageState("idle");
-    track("dream_submit", { mood, length: dream.trim().length });
+    track("dream_submit", { style, length: dream.trim().length });
 
     try {
       const response = await fetch("/api/dream", {
@@ -104,7 +111,7 @@ export function DreamLab() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ dream, mood }),
+        body: JSON.stringify({ dream, style }),
       });
       const payload = (await response.json()) as {
         error?: string;
@@ -117,7 +124,10 @@ export function DreamLab() {
       }
 
       setResult(payload.result);
-      track("interpretation_generated", { mood, mode: payload.mode ?? "mock" });
+      track("interpretation_generated", {
+        style,
+        mode: payload.mode ?? "mock",
+      });
 
       // 해몽을 먼저 보여주고 이미지는 뒤이어 채운다. 묶어서 기다리게 하면
       // 사용자가 20초 넘게 빈 화면을 본다.
@@ -351,24 +361,24 @@ export function DreamLab() {
                 </p>
               ) : null}
 
-              <div className="grid gap-2 sm:grid-cols-4">
-                {moods.map((item) => (
+              <div className="style-chips">
+                {styles.map((item) => (
                   <button
-                    aria-pressed={item.id === mood}
-                    className="mood-button"
+                    aria-pressed={item.id === style}
+                    className="style-chip"
                     key={item.id}
-                    onClick={() => setMood(item.id)}
+                    onClick={() => setStyle(item.id)}
                     type="button"
                   >
-                    <span>{item.label}</span>
-                    <small>{item.description}</small>
+                    <strong>{item.label}</strong>
+                    <small>{item.hint}</small>
                   </button>
                 ))}
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-[#655a4b]">
-                  {wordCount}단어 · 선택한 분위기: {selectedMood.label}
+                  {wordCount}단어 · 화풍: {selectedStyle.label}
                 </p>
                 <button
                   className="inline-flex h-12 w-full items-center justify-center rounded-[8px] bg-[#16796d] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#105f57] disabled:cursor-not-allowed disabled:bg-[#a8a096] sm:w-auto"

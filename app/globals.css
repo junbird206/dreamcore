@@ -99,48 +99,11 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-.mood-button {
-  min-height: 76px;
-  border: 1px solid #d8cebb;
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 12px;
-  text-align: left;
-  transition:
-    border-color 160ms ease,
-    background 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
-}
 
-.mood-button:hover,
-.mood-button[aria-pressed="true"] {
-  border-color: #16796d;
-  background: #eef8f5;
-  box-shadow: 0 10px 24px rgba(22, 121, 109, 0.13);
-}
 
-.mood-button[aria-pressed="true"] {
-  transform: translateY(-1px);
-}
 
-.mood-button span,
-.mood-button small {
-  display: block;
-}
 
-.mood-button span {
-  color: #171411;
-  font-size: 14px;
-  font-weight: 800;
-}
 
-.mood-button small {
-  margin-top: 6px;
-  color: #6f6252;
-  font-size: 12px;
-  line-height: 1.45;
-}
 
 .mock-tile,
 .generated-image,
@@ -347,4 +310,48 @@ textarea {
 .mic-button.is-listening span {
   background: #d0402c;
   animation: pulse 1s ease-in-out infinite;
+}
+
+/* 화풍 칩. 12개라 자동 줄바꿈되는 그리드로 두고 하나씩만 고르게 한다. */
+.style-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.style-chip {
+  display: grid;
+  gap: 2px;
+  border: 1px solid #d8cebb;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 9px 12px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.style-chip strong {
+  color: #2a2119;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.style-chip small {
+  color: #7d7062;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.style-chip:hover {
+  border-color: #16796d;
+}
+
+.style-chip[aria-pressed="true"] {
+  border-color: #16796d;
+  background: #e7f5f1;
+}
+
+.style-chip[aria-pressed="true"] strong {
+  color: #0f5c53;
 }

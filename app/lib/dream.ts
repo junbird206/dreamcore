@@ -1,4 +1,16 @@
-export type DreamMood = "mystic" | "warm" | "uneasy" | "cinematic";
+export type DreamStyle =
+  | "liminal"
+  | "backrooms"
+  | "weirdcore"
+  | "analog-horror"
+  | "dreamcore"
+  | "surrealism"
+  | "metaphysical"
+  | "fairycore"
+  | "cottagecore"
+  | "impressionism"
+  | "ukiyoe"
+  | "vaporwave";
 
 export type DreamResult = {
   title: string;
@@ -8,72 +20,132 @@ export type DreamResult = {
   palette: string;
 };
 
-export const moods: Array<{
-  id: DreamMood;
+/**
+ * 꿈 장면의 화풍.
+ *
+ * "예쁘게" 같은 추상어 대신 **이름이 붙은 미학**을 쓴다. 사람들은 자기 꿈의
+ * 인상을 말로 옮기기 어려워하는데, 사조 이름 하나면 정확히 지정된다.
+ * `prompt`는 이미지 모델에 그대로 넘어가는 영어 조각이다.
+ */
+export const styles: Array<{
+  id: DreamStyle;
   label: string;
-  description: string;
+  hint: string;
+  prompt: string;
 }> = [
   {
-    id: "mystic",
-    label: "몽환적",
-    description: "안개, 달빛, 느린 초현실감",
+    id: "liminal",
+    label: "리미널 스페이스",
+    hint: "아무도 없는 익숙한 공간",
+    prompt:
+      "Liminal space aesthetic: deserted familiar interior, fluorescent lighting, unsettling emptiness, wide symmetrical composition, nobody present.",
   },
   {
-    id: "warm",
-    label: "따뜻한",
-    description: "새벽빛, 부드러운 색, 회복감",
+    id: "backrooms",
+    label: "백룸",
+    hint: "끝없는 누런 복도",
+    prompt:
+      "The Backrooms aesthetic: endless mono-yellow wallpapered rooms, damp carpet, buzzing fluorescent ceiling panels, claustrophobic repetition.",
   },
   {
-    id: "uneasy",
-    label: "불안한",
-    description: "낯선 복도, 긴장, 흐린 경계",
+    id: "weirdcore",
+    label: "위어드코어",
+    hint: "저화질로 왜곡된 향수",
+    prompt:
+      "Weirdcore aesthetic: low-resolution digital artifacting, oversaturated washed colors, dreamlike wrongness, early-2000s snapshot nostalgia.",
   },
   {
-    id: "cinematic",
-    label: "영화 같은",
-    description: "강한 구도, 빛과 그림자, 드라마",
+    id: "analog-horror",
+    label: "아날로그 호러",
+    hint: "VHS 노이즈, 불길함",
+    prompt:
+      "Analog horror aesthetic: degraded VHS tape look, scanlines and tracking distortion, heavy grain, washed contrast, ominous quiet dread.",
+  },
+  {
+    id: "dreamcore",
+    label: "드림코어",
+    hint: "파스텔빛, 실내의 구름",
+    prompt:
+      "Dreamcore aesthetic: soft pastel palette, drifting clouds indoors, empty swimming-pool stillness, hazy glow, nostalgic and gently uncanny.",
+  },
+  {
+    id: "surrealism",
+    label: "초현실주의",
+    hint: "중력을 잃은 사물들",
+    prompt:
+      "Surrealist painting: impossible juxtapositions, doors floating in a clouded sky, objects defying gravity, crisp realistic rendering of irrational scenes.",
+  },
+  {
+    id: "metaphysical",
+    label: "형이상학 회화",
+    hint: "텅 빈 광장과 긴 그림자",
+    prompt:
+      "Metaphysical painting of the Scuola Metafisica movement: empty sunlit plaza, long dramatic shadows, classical arcades, mannequin-like stillness, ochre and deep green.",
+  },
+  {
+    id: "fairycore",
+    label: "페어리코어",
+    hint: "빛나는 버섯과 반딧불",
+    prompt:
+      "Fairycore aesthetic: glowing mushrooms and wildflowers, fireflies, dappled emerald forest light, delicate whimsical enchantment.",
+  },
+  {
+    id: "cottagecore",
+    label: "코티지코어",
+    hint: "포근한 시골집",
+    prompt:
+      "Cottagecore aesthetic: warm rural cosiness, soft natural daylight, floral textiles, wooden interiors, gentle pastoral safety.",
+  },
+  {
+    id: "impressionism",
+    label: "인상주의",
+    hint: "번지는 빛의 붓질",
+    prompt:
+      "Impressionist oil painting: visible broken brushstrokes, luminous natural light, soft dissolving edges, plein-air colour vibration.",
+  },
+  {
+    id: "ukiyoe",
+    label: "우키요에",
+    hint: "일본 목판화",
+    prompt:
+      "Ukiyo-e Japanese woodblock print: flat bold outlines, stylised cresting waves, limited indigo and ochre palette, visible paper texture.",
+  },
+  {
+    id: "vaporwave",
+    label: "베이퍼웨이브",
+    hint: "90년대 네온과 격자",
+    prompt:
+      "Vaporwave aesthetic: 1990s pastel neon pink and cyan, chrome grid horizon, classical marble bust, VHS glow, retro-futurist mall nostalgia.",
   },
 ];
 
 export const starterDream =
   "낯선 캠퍼스의 긴 복도를 걷고 있었는데, 강의실 문을 열 때마다 바다가 보였어요. 마지막 문 뒤에는 어릴 때 살던 방이 있었고, 창밖에는 아주 큰 달이 떠 있었습니다.";
 
-export function isDreamMood(value: unknown): value is DreamMood {
-  return moods.some((mood) => mood.id === value);
+export const defaultStyle: DreamStyle = "dreamcore";
+
+export function isDreamStyle(value: unknown): value is DreamStyle {
+  return styles.some((style) => style.id === value);
 }
 
-export function createMockResult(dream: string, mood: DreamMood): DreamResult {
+export function findStyle(id: DreamStyle) {
+  return styles.find((style) => style.id === id) ?? styles[0];
+}
+
+/** Gemini 호출이 실패했을 때 쓰는 폴백. 화면이 비는 것보다 낫다. */
+export function createMockResult(
+  dream: string,
+  style: DreamStyle,
+): DreamResult {
   const compact = dream.trim().replace(/\s+/g, " ");
-  const titleMap: Record<DreamMood, string> = {
-    mystic: "문 너머의 달빛",
-    warm: "돌아갈 수 있는 방",
-    uneasy: "길어진 복도와 닫히지 않는 문",
-    cinematic: "캠퍼스 끝의 바다",
-  };
-
-  const paletteMap: Record<DreamMood, string> = {
-    mystic: "violet, deep green, moonlit silver",
-    warm: "apricot, soft blue, candle white",
-    uneasy: "graphite, sea fog, muted red",
-    cinematic: "teal, amber, black, pearl",
-  };
-
-  const insightMap: Record<DreamMood, string> = {
-    mystic:
-      "이 꿈은 지금의 당신이 익숙한 생활권 안에서 새로운 가능성의 문을 찾고 있다는 신호처럼 읽힙니다. 반복되는 문은 선택지를, 달빛은 아직 말로 정리되지 않은 직감을 상징합니다.",
-    warm:
-      "이 꿈은 바쁜 변화 속에서도 돌아갈 수 있는 내면의 기준을 찾는 장면처럼 보입니다. 오래된 방은 안정감을, 바다는 넓어진 선택지를 상징합니다.",
-    uneasy:
-      "이 꿈은 해야 할 일과 가고 싶은 방향 사이의 압박을 은유하는 듯합니다. 긴 복도는 지연된 결정을, 낯선 문은 아직 확인하지 못한 기회를 나타냅니다.",
-    cinematic:
-      "이 꿈은 일상의 무대가 더 큰 이야기로 확장되는 순간을 보여줍니다. 캠퍼스와 바다가 겹치는 장면은 배움, 이동, 독립의 욕구가 동시에 커지고 있음을 암시합니다.",
-  };
+  const selected = findStyle(style);
 
   return {
-    title: titleMap[mood],
-    insight: insightMap[mood],
+    title: "문 너머의 달빛",
+    insight:
+      "이 꿈은 익숙한 생활권 안에서 새로운 가능성의 문을 찾고 있다는 신호처럼 읽힙니다. 반복되는 문은 선택지를, 달빛은 아직 말로 정리되지 않은 직감을 상징합니다.",
     symbols: ["문", "바다", "달", "익숙한 방"],
-    palette: paletteMap[mood],
-    prompt: `Create a highly detailed dreamlike image based on this Korean dream: "${compact}". Mood: ${mood}. Visual language: surreal campus corridor, doors opening into an ocean, childhood bedroom, oversized moon outside the window, atmospheric light, ${paletteMap[mood]}. No text in the image.`,
+    palette: "violet, deep green, moonlit silver",
+    prompt: `Create a detailed dreamlike image based on this Korean dream: "${compact}". Visual style: ${selected.prompt} No text in the image.`,
   };
 }

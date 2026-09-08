@@ -82,7 +82,7 @@ test("returns a mock dream interpretation from the API", async () => {
     body: JSON.stringify({
       dream:
         "도서관에서 길을 잃었는데 책장을 넘길 때마다 밤하늘과 바다가 이어졌어요.",
-      mood: "cinematic",
+      style: "dreamcore",
     }),
   });
 
@@ -91,6 +91,8 @@ test("returns a mock dream interpretation from the API", async () => {
 
   const payload = await response.json();
   assert.equal(payload.mode, "mock");
-  assert.equal(payload.result.title, "캠퍼스 끝의 바다");
+  assert.ok(payload.result.title.length > 0);
   assert.match(payload.result.prompt, /No text in the image/);
+  // 고른 화풍이 이미지 프롬프트까지 전달돼야 한다
+  assert.match(payload.result.prompt, /Dreamcore aesthetic/);
 });
