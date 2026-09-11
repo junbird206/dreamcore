@@ -374,6 +374,7 @@ export function DreamLab() {
                     type="button"
                   >
                     <strong>{item.label}</strong>
+                    <small>{item.hint}</small>
                   </button>
                 ))}
               </div>

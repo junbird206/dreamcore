@@ -323,7 +323,8 @@ textarea {
 .style-chip {
   position: relative;
   display: block;
-  aspect-ratio: 5 / 2;
+  /* 라벨 + 설명 두 줄이 들어갈 만큼만 높인다. */
+  aspect-ratio: 2 / 1;
   overflow: hidden;
   border: 0;
   border-radius: 8px;
@@ -341,27 +342,43 @@ textarea {
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(4, 8, 9, 0.9) 0%,
-    rgba(4, 8, 9, 0.55) 28%,
-    rgba(4, 8, 9, 0.1) 58%,
+    rgba(4, 8, 9, 0.93) 0%,
+    rgba(4, 8, 9, 0.78) 34%,
+    rgba(4, 8, 9, 0.22) 62%,
     transparent 100%
   );
   content: "";
   transition: background 0.15s;
 }
 
-.style-chip strong {
+.style-chip strong,
+.style-chip small {
   position: absolute;
   right: 9px;
-  bottom: 8px;
   left: 9px;
   z-index: 1;
+  display: block;
+  text-align: left;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+.style-chip strong {
+  bottom: 21px;
   color: #ffffff;
   font-size: 12.5px;
   font-weight: 700;
   line-height: 1.2;
-  text-align: left;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.style-chip small {
+  bottom: 7px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .style-chip:hover {
@@ -371,9 +388,9 @@ textarea {
 .style-chip:hover::after {
   background: linear-gradient(
     to top,
-    rgba(4, 8, 9, 0.82) 0%,
-    rgba(4, 8, 9, 0.4) 28%,
-    transparent 62%
+    rgba(4, 8, 9, 0.9) 0%,
+    rgba(4, 8, 9, 0.66) 34%,
+    transparent 70%
   );
 }
 
@@ -388,9 +405,9 @@ textarea {
 .style-chip[aria-pressed="true"]::after {
   background: linear-gradient(
     to top,
-    rgba(4, 8, 9, 0.92) 0%,
-    rgba(9, 52, 47, 0.5) 30%,
-    rgba(9, 52, 47, 0.12) 62%,
+    rgba(4, 8, 9, 0.94) 0%,
+    rgba(9, 52, 47, 0.76) 34%,
+    rgba(9, 52, 47, 0.2) 64%,
     transparent 100%
   );
 }
