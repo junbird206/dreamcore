@@ -33,13 +33,15 @@ test("server-renders the Dreamcore MVP shell", async () => {
   const html = await response.text();
   assert.match(html, /<title>Dreamcore<\/title>/i);
   assert.match(html, /Google Student Ambassador 2026/);
-  assert.match(html, /꿈을 적어주세요/);
-  assert.match(html, /1단계 Mock 모드/);
-  assert.match(html, /sign-up 링크/);
-  assert.match(html, /10K/);
-  assert.match(html, /100/);
-  assert.match(html, /1%/);
+  // 입력 → 화풍 → CTA 순서가 랜딩의 뼈대다
+  assert.match(html, /꿈에서 본 장소, 사람, 색/);
+  assert.match(html, /꿈의 화풍 고르기/);
+  assert.match(html, /리미널 스페이스/);
+  assert.match(html, /내 꿈속 장면 생성하기 &amp; 해몽 듣기/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
+  // 개발 중 문구와 내부 KPI가 다시 새어나오지 않는지 지킨다
+  assert.doesNotMatch(html, /Mock 모드|API 키 없이/);
+  assert.doesNotMatch(html, /방문 목표|sign-up 목표|전환 기준/);
 });
 
 test("keeps starter preview code removed", async () => {

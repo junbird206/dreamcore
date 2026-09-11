@@ -278,288 +278,219 @@ export function DreamLab() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171411]">
-      <section className="hero-grid mx-auto grid min-h-screen w-full max-w-7xl gap-0 px-5 py-5 md:grid-cols-[minmax(0,0.92fr)_minmax(420px,1.08fr)] md:px-8">
-        <aside className="dream-visual relative flex min-h-[340px] min-w-0 overflow-hidden rounded-[8px] bg-[#141313] p-6 text-white md:min-h-[calc(100vh-40px)] md:p-8">
-          <div className="absolute inset-0 dream-sky" />
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
-          <div className="relative z-10 mt-auto max-w-lg">
-            <p className="mb-3 max-w-[250px] text-xs font-semibold uppercase text-[#9ee4d6] sm:max-w-none sm:text-sm">
+    <main className="min-h-screen bg-[#f7f3ea] pb-14 text-[#171411]">
+      <div className="mx-auto w-full max-w-[560px] px-4 pt-4 sm:px-6 sm:pt-6">
+        <header className="dream-banner">
+          <div className="dream-sky absolute inset-0" />
+          <div className="relative z-10 mt-auto">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#9ee4d6]">
               Google Student Ambassador 2026
             </p>
-            <h1 className="text-balance text-5xl font-semibold leading-[0.98] text-white md:text-7xl">
+            <h1 className="mt-1.5 text-4xl font-semibold leading-none text-white sm:text-5xl">
               Dreamcore
             </h1>
-            <p className="mt-5 max-w-md text-pretty text-base leading-7 text-white/78">
+            <p className="mt-2.5 text-sm leading-6 text-white/80">
               방금 꾼 꿈을 적으면, AI가 상징을 읽고 꿈속 장면을 이미지로
               되살립니다.
             </p>
-            <div className="dream-metrics mt-7 grid gap-2 text-sm text-white/80">
-              <div className="metric">
-                <strong>10K</strong>
-                <span>방문 목표</span>
-              </div>
-              <div className="metric">
-                <strong>100</strong>
-                <span>sign-up 목표</span>
-              </div>
-              <div className="metric">
-                <strong>1%</strong>
-                <span>전환 기준</span>
-              </div>
-            </div>
           </div>
-        </aside>
+        </header>
 
-        <div className="flex min-h-screen min-w-0 flex-col justify-center py-8 md:pl-8">
-          <div className="mx-auto w-full min-w-0 max-w-2xl">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold text-[#5d4d39]">
-                  오늘 아침의 꿈 기록
-                </p>
-                <h2 className="mt-1 text-3xl font-semibold text-[#171411]">
-                  꿈을 적어주세요
-                </h2>
-              </div>
-              <a
-                className="inline-flex h-11 w-full items-center justify-center rounded-[8px] bg-[#171411] px-4 text-sm font-semibold text-white transition hover:bg-[#2b251f] sm:w-auto"
-                href={signupUrl || "#signup-url-needed"}
-                onClick={handleSignupClick}
+        <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+          <div className="relative">
+            <label className="block">
+              <span className="sr-only">꿈 내용</span>
+              <textarea
+                className="min-h-[150px] w-full resize-none rounded-[10px] border border-[#d8cebb] bg-white p-4 pb-14 text-base leading-7 text-[#25201b] shadow-sm outline-none transition placeholder:text-[#8a7d6d] focus:border-[#16796d] focus:ring-4 focus:ring-[#8ad8ca]/30"
+                value={dream}
+                onChange={(event) => setDream(event.target.value)}
+                placeholder="꿈에서 본 장소, 사람, 색, 이상했던 장면을 편하게 적어주세요."
+              />
+            </label>
+
+            {speech.supported ? (
+              <button
+                aria-label={
+                  speech.listening ? "음성 입력 중지" : "음성으로 입력하기"
+                }
+                aria-pressed={speech.listening}
+                className={
+                  speech.listening ? "mic-button is-listening" : "mic-button"
+                }
+                onClick={handleVoiceToggle}
+                type="button"
               >
-                sign-up 링크
-              </a>
-            </div>
-
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="relative">
-                <label className="block">
-                  <span className="sr-only">꿈 내용</span>
-                  <textarea
-                    className="min-h-[190px] w-full resize-none rounded-[8px] border border-[#d8cebb] bg-white p-5 pb-16 text-base leading-7 text-[#25201b] shadow-sm outline-none transition placeholder:text-[#8a7d6d] focus:border-[#16796d] focus:ring-4 focus:ring-[#8ad8ca]/35"
-                    value={dream}
-                    onChange={(event) => setDream(event.target.value)}
-                    placeholder="꿈에서 본 장소, 사람, 색, 이상했던 장면을 편하게 적어주세요."
-                  />
-                </label>
-
-                {speech.supported ? (
-                  <button
-                    aria-label={
-                      speech.listening ? "음성 입력 중지" : "음성으로 입력하기"
-                    }
-                    aria-pressed={speech.listening}
-                    className={
-                      speech.listening ? "mic-button is-listening" : "mic-button"
-                    }
-                    onClick={handleVoiceToggle}
-                    type="button"
-                  >
-                    <span aria-hidden="true">●</span>
-                    {speech.listening ? "듣는 중" : "말로 적기"}
-                  </button>
-                ) : null}
-              </div>
-
-              {speech.error ? (
-                <p className="text-sm font-semibold text-[#8a3b27]">
-                  {speech.error}
-                </p>
-              ) : null}
-
-              <div className="style-chips">
-                {styles.map((item) => (
-                  <button
-                    aria-label={`${item.label} — ${item.hint}`}
-                    aria-pressed={item.id === style}
-                    className="style-chip"
-                    key={item.id}
-                    onClick={() => setStyle(item.id)}
-                    style={{
-                      backgroundImage: `url(/styles/${item.id}.jpg?v=${THUMB_VERSION})`,
-                    }}
-                    title={item.hint}
-                    type="button"
-                  >
-                    <strong>{item.label}</strong>
-                    <small>{item.hint}</small>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-[#655a4b]">
-                  {wordCount}단어 · 화풍: {selectedStyle.label}
-                </p>
-                <button
-                  className="inline-flex h-12 w-full items-center justify-center rounded-[8px] bg-[#16796d] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#105f57] disabled:cursor-not-allowed disabled:bg-[#a8a096] sm:w-auto"
-                  disabled={dream.trim().length < 20 || isLoading}
-                  type="submit"
-                >
-                  {isLoading ? "꿈을 읽는 중" : "해몽과 이미지 만들기"}
-                </button>
-              </div>
-            </form>
-
-            <section className="mt-6 rounded-[8px] border border-[#d8cebb] bg-white p-5 shadow-sm">
-              {!result && !isLoading ? (
-                <div className="grid gap-4 md:grid-cols-[1fr_180px]">
-                  <div>
-                    <p className="text-sm font-semibold text-[#16796d]">
-                      1단계 Mock 모드
-                    </p>
-                    <h3 className="mt-2 text-xl font-semibold">
-                      API 키 없이 전체 흐름을 먼저 검증합니다.
-                    </h3>
-                    <p className="mt-3 text-sm leading-6 text-[#655a4b]">
-                      다음 단계에서 Gemini 해몽 API와 Nano Banana 이미지 생성을
-                      실제 호출로 교체합니다.
-                    </p>
-                  </div>
-                  <div className="mock-tile" aria-hidden="true" />
-                </div>
-              ) : null}
-
-              {isLoading ? (
-                <div className="loading-state">
-                  <div className="loading-image" />
-                  <div className="space-y-3">
-                    <div className="loading-line w-2/3" />
-                    <div className="loading-line w-full" />
-                    <div className="loading-line w-5/6" />
-                  </div>
-                </div>
-              ) : null}
-
-              {errorMessage ? (
-                <div className="rounded-[8px] border border-[#d9896c] bg-[#fff6ef] p-4 text-sm font-semibold text-[#8a3b27]">
-                  {errorMessage}
-                </div>
-              ) : null}
-
-              {result ? (
-                <div className="grid gap-5 lg:grid-cols-[230px_1fr]">
-                  <div className="space-y-3">
-                    {imageState === "ready" && image ? (
-                      // base64 data URI라 next/image 최적화가 적용되지 않는다.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        alt={`${result.title} — 꿈 장면 이미지`}
-                        className="generated-image-real"
-                        src={image}
-                      />
-                    ) : (
-                      <div
-                        className={
-                          imageState === "failed"
-                            ? "generated-image"
-                            : "generated-image generated-image-pending"
-                        }
-                      >
-                        <p>
-                          {imageState === "failed"
-                            ? "이미지를 만들지 못했어요"
-                            : "꿈 장면 그리는 중"}
-                        </p>
-                      </div>
-                    )}
-                    <div
-                      className="share-card-preview"
-                      // 실제로 저장되는 카드와 같은 배경을 보여준다.
-                      style={
-                        image
-                          ? { backgroundImage: `url(${image})` }
-                          : undefined
-                      }
-                    >
-                      <p>Dreamcore</p>
-                      <strong>{result.title}</strong>
-                      <span>{result.symbols.map((symbol) => `#${symbol}`).join(" ")}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#16796d]">
-                      꿈 해몽 결과
-                    </p>
-                    <h3 className="mt-1 text-2xl font-semibold">
-                      {result.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-7 text-[#4b4137]">
-                      {result.insight}
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {result.symbols.map((symbol) => (
-                        <span className="symbol-chip" key={symbol}>
-                          {symbol}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-4 rounded-[8px] bg-[#f4efe5] p-4">
-                      <p className="text-xs font-semibold uppercase text-[#776750]">
-                        Image prompt preview
-                      </p>
-                      <p className="mt-2 line-clamp-4 text-sm leading-6 text-[#4b4137]">
-                        {result.prompt}
-                      </p>
-                    </div>
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <button
-                        className="inline-flex h-11 items-center justify-center rounded-[8px] border border-[#c9bda8] px-4 text-sm font-semibold text-[#2a2119] transition hover:bg-[#f4efe5]"
-                        onClick={handleNativeShare}
-                        type="button"
-                      >
-                        공유하기
-                      </button>
-                      <button
-                        className="inline-flex h-11 items-center justify-center rounded-[8px] border border-[#c9bda8] px-4 text-sm font-semibold text-[#2a2119] transition hover:bg-[#f4efe5]"
-                        onClick={handleCopyResult}
-                        type="button"
-                      >
-                        문구 복사
-                      </button>
-                      <button
-                        className="inline-flex h-11 items-center justify-center rounded-[8px] border border-[#c9bda8] px-4 text-sm font-semibold text-[#2a2119] transition hover:bg-[#f4efe5]"
-                        onClick={handleDownloadCard}
-                        type="button"
-                      >
-                        카드 저장
-                      </button>
-                      <a
-                        className="inline-flex h-11 items-center justify-center rounded-[8px] bg-[#171411] px-4 text-sm font-semibold text-white transition hover:bg-[#2b251f]"
-                        href={signupUrl || "#signup-url-needed"}
-                        onClick={handleSignupClick}
-                      >
-                        sign-up으로 이동
-                      </a>
-                    </div>
-                    {shareStatus !== "idle" ? (
-                      <p className="mt-3 text-sm font-semibold text-[#16796d]">
-                        {shareStatus === "copied"
-                          ? "공유 문구를 복사했습니다."
-                          : null}
-                        {shareStatus === "downloaded"
-                          ? "공유 카드를 저장했습니다."
-                          : null}
-                        {shareStatus === "shared"
-                          ? "공유를 완료했습니다."
-                          : null}
-                        {shareStatus === "failed"
-                          ? "공유 작업을 완료하지 못했습니다."
-                          : null}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
-            </section>
-
-            <p className="mt-4 text-xs leading-5 text-[#766b5d]">
-              Dreamcore의 해몽은 엔터테인먼트와 자기성찰을 위한 콘텐츠입니다.
-              민감한 개인정보는 입력하지 않는 것을 권장합니다.
-            </p>
+                <span aria-hidden="true">●</span>
+                {speech.listening ? "듣는 중" : "말로 적기"}
+              </button>
+            ) : null}
           </div>
-        </div>
-      </section>
+
+          {speech.error ? (
+            <p className="text-sm font-semibold text-[#8a3b27]">
+              {speech.error}
+            </p>
+          ) : null}
+
+          <div>
+            <div className="mb-2 flex items-baseline justify-between gap-3">
+              <p className="text-sm font-semibold text-[#3d352c]">
+                꿈의 화풍 고르기
+              </p>
+              <p className="text-xs text-[#7d7062]">
+                {wordCount}단어 · {selectedStyle.label}
+              </p>
+            </div>
+            {/* 12개를 모두 펼치면 화면을 다 차지한다. 가로로 넘겨 보게 한다. */}
+            <div className="style-rail">
+              {styles.map((item) => (
+                <button
+                  aria-label={`${item.label} — ${item.hint}`}
+                  aria-pressed={item.id === style}
+                  className="style-chip"
+                  key={item.id}
+                  onClick={() => setStyle(item.id)}
+                  style={{
+                    backgroundImage: `url(/styles/${item.id}.jpg?v=${THUMB_VERSION})`,
+                  }}
+                  title={item.hint}
+                  type="button"
+                >
+                  <strong>{item.label}</strong>
+                  <small>{item.hint}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            className="cta-primary"
+            disabled={dream.trim().length < 20 || isLoading}
+            type="submit"
+          >
+            {isLoading ? "꿈을 읽는 중" : "내 꿈속 장면 생성하기 & 해몽 듣기"}
+          </button>
+        </form>
+
+        {result || isLoading || errorMessage ? (
+          <section className="mt-5 rounded-[10px] border border-[#d8cebb] bg-white p-4 shadow-sm sm:p-5">
+            {isLoading ? (
+              <div className="loading-state">
+                <div className="loading-image" />
+                <div className="space-y-3">
+                  <div className="loading-line w-2/3" />
+                  <div className="loading-line w-full" />
+                  <div className="loading-line w-5/6" />
+                </div>
+              </div>
+            ) : null}
+
+            {errorMessage ? (
+              <div className="rounded-[8px] border border-[#d9896c] bg-[#fff6ef] p-4 text-sm font-semibold text-[#8a3b27]">
+                {errorMessage}
+              </div>
+            ) : null}
+
+            {result ? (
+              <div className="space-y-4">
+                {imageState === "ready" && image ? (
+                  // base64 data URI라 next/image 최적화가 적용되지 않는다.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    alt={`${result.title} — 꿈 장면 이미지`}
+                    className="generated-image-real"
+                    src={image}
+                  />
+                ) : (
+                  <div
+                    className={
+                      imageState === "failed"
+                        ? "generated-image"
+                        : "generated-image generated-image-pending"
+                    }
+                  >
+                    <p>
+                      {imageState === "failed"
+                        ? "이미지를 만들지 못했어요"
+                        : "꿈 장면 그리는 중"}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-sm font-semibold text-[#16796d]">
+                    꿈 해몽 결과
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold leading-snug">
+                    {result.title}
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-[#4b4137]">
+                    {result.insight}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {result.symbols.map((symbol) => (
+                      <span className="symbol-chip" key={symbol}>
+                        {symbol}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="result-action"
+                    onClick={handleNativeShare}
+                    type="button"
+                  >
+                    공유하기
+                  </button>
+                  <button
+                    className="result-action"
+                    onClick={handleCopyResult}
+                    type="button"
+                  >
+                    문구 복사
+                  </button>
+                  <button
+                    className="result-action"
+                    onClick={handleDownloadCard}
+                    type="button"
+                  >
+                    카드 저장
+                  </button>
+                </div>
+
+                {shareStatus !== "idle" ? (
+                  <p className="text-sm font-semibold text-[#16796d]">
+                    {shareStatus === "copied" ? "공유 문구를 복사했습니다." : null}
+                    {shareStatus === "downloaded"
+                      ? "공유 카드를 저장했습니다."
+                      : null}
+                    {shareStatus === "shared" ? "공유를 완료했습니다." : null}
+                    {shareStatus === "failed"
+                      ? "공유 작업을 완료하지 못했습니다."
+                      : null}
+                  </p>
+                ) : null}
+
+                {/* 결과를 본 직후가 가입 의향이 가장 높은 지점이다. */}
+                <a
+                  className="signup-cta"
+                  href={signupUrl || "#signup-url-needed"}
+                  onClick={handleSignupClick}
+                >
+                  Google Student Ambassador 혜택 보러 가기
+                </a>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
+
+        <p className="mt-5 text-center text-xs leading-5 text-[#8a7d6d]">
+          Dreamcore의 해몽은 엔터테인먼트와 자기성찰을 위한 콘텐츠입니다.
+          민감한 개인정보는 입력하지 않는 것을 권장합니다.
+        </p>
+      </div>
     </main>
   );
 }

@@ -34,9 +34,6 @@ textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
-.hero-grid {
-  align-items: stretch;
-}
 
 .dream-sky {
   /* 아래로 갈수록 어둡게 덮어 흰 글씨(제목·지표)가 읽히게 한다. */
@@ -54,50 +51,14 @@ textarea {
   background-color: #0b1113;
 }
 
-.dream-visual::before {
-  position: absolute;
-  inset: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-  content: "";
-  z-index: 1;
-}
-
-.dream-visual p,
-.dream-visual span,
-.dream-visual strong {
-  overflow-wrap: anywhere;
-}
 
 
 
 
-.dream-metrics {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
 
-.metric {
-  min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 10px;
-  backdrop-filter: blur(10px);
-}
 
-.metric strong {
-  display: block;
-  color: #ffffff;
-  font-size: clamp(18px, 5vw, 22px);
-  line-height: 1;
-}
 
-.metric span {
-  display: block;
-  margin-top: 6px;
-  font-size: 11px;
-  overflow-wrap: anywhere;
-}
+
 
 
 
@@ -410,4 +371,111 @@ textarea {
     rgba(9, 52, 47, 0.2) 64%,
     transparent 100%
   );
+}
+
+/* --- 모바일 우선 단일 컬럼 레이아웃 --- */
+
+.dream-banner {
+  position: relative;
+  display: flex;
+  min-height: 208px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #0b1113;
+  padding: 20px;
+}
+
+/* 화풍 레일. 12개를 다 펼치면 화면을 차지해서 가로로 넘겨 보게 한다.
+   좌우 끝에서 여백이 남지 않도록 컨테이너 패딩만큼 당겨 쓴다. */
+.style-rail {
+  display: flex;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 2px 16px 8px;
+  overflow-x: auto;
+  scroll-padding-left: 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.style-rail::-webkit-scrollbar {
+  height: 5px;
+}
+
+.style-rail::-webkit-scrollbar-thumb {
+  border-radius: 99px;
+  background: rgba(22, 121, 109, 0.28);
+}
+
+.style-rail .style-chip {
+  flex: 0 0 148px;
+  scroll-snap-align: start;
+}
+
+.cta-primary {
+  display: flex;
+  width: 100%;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #16796d;
+  padding: 0 18px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.cta-primary:hover:not(:disabled) {
+  background: #105f57;
+}
+
+.cta-primary:disabled {
+  background: #b3aca2;
+  cursor: not-allowed;
+}
+
+.result-action {
+  display: inline-flex;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c9bda8;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: #2a2119;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.result-action:hover {
+  background: #f4efe5;
+}
+
+.signup-cta {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #171411;
+  padding: 0 16px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.signup-cta:hover {
+  background: #2b251f;
+}
+
+@media (min-width: 640px) {
+  .style-rail {
+    margin: 0 -24px;
+    padding: 2px 24px 8px;
+    scroll-padding-left: 24px;
+  }
 }
