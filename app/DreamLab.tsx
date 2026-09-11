@@ -1,16 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   DreamResult,
   DreamStyle,
   defaultStyle,
   findStyle,
-  starterDream,
   styles,
 } from "./lib/dream";
 import { renderShareCard } from "./lib/share-card";
-import { useSpeechInput } from "./lib/speech";
 
 type ShareStatus = "idle" | "copied" | "downloaded" | "shared" | "failed";
 type ImageState = "idle" | "loading" | "ready" | "failed";
@@ -47,7 +45,7 @@ function buildShareText(result: DreamResult) {
 }
 
 export function DreamLab() {
-  const [dream, setDream] = useState(starterDream);
+  const [dream, setDream] = useState("");
   const [style, setStyle] = useState<DreamStyle>(defaultStyle);
   const [result, setResult] = useState<DreamResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,11 +54,6 @@ export function DreamLab() {
   const [image, setImage] = useState<string | null>(null);
   const [imageState, setImageState] = useState<ImageState>("idle");
 
-  // 음성 인식으로 들어온 말은 녹음 시작 시점의 텍스트 뒤에 이어 붙인다.
-  const dreamBeforeVoiceRef = useRef("");
-  const speech = useSpeechInput((transcript) => {
-    setDream(dreamBeforeVoiceRef.current + transcript);
-  });
 
   const wordCount = useMemo(() => {
     return dream.trim() ? dream.trim().split(/\s+/).length : 0;
@@ -178,19 +171,6 @@ export function DreamLab() {
     }
   }
 
-  function handleVoiceToggle() {
-    if (speech.listening) {
-      speech.stop();
-      track("voice_input_stopped", { length: dream.trim().length });
-      return;
-    }
-
-    const existing = dream.trimEnd();
-    dreamBeforeVoiceRef.current = existing ? `${existing} ` : "";
-    speech.start();
-    track("voice_input_started");
-  }
-
   function handleSignupClick() {
     track("cta_clicked", { location: result ? "result" : "hero" });
   }
@@ -301,36 +281,15 @@ export function DreamLab() {
             <label className="block">
               <span className="sr-only">꿈 내용</span>
               <textarea
-                className="min-h-[150px] w-full resize-none rounded-[10px] border border-[#d8cebb] bg-white p-4 pb-14 text-base leading-7 text-[#25201b] shadow-sm outline-none transition placeholder:text-[#8a7d6d] focus:border-[#16796d] focus:ring-4 focus:ring-[#8ad8ca]/30"
+                className="min-h-[150px] w-full resize-none rounded-[10px] border border-[#d8cebb] bg-white p-4 text-base leading-7 text-[#25201b] shadow-sm outline-none transition placeholder:text-[#8a7d6d] focus:border-[#16796d] focus:ring-4 focus:ring-[#8ad8ca]/30"
                 value={dream}
                 onChange={(event) => setDream(event.target.value)}
                 placeholder="꿈에서 본 장소, 사람, 색, 이상했던 장면을 편하게 적어주세요."
               />
             </label>
 
-            {speech.supported ? (
-              <button
-                aria-label={
-                  speech.listening ? "음성 입력 중지" : "음성으로 입력하기"
-                }
-                aria-pressed={speech.listening}
-                className={
-                  speech.listening ? "mic-button is-listening" : "mic-button"
-                }
-                onClick={handleVoiceToggle}
-                type="button"
-              >
-                <span aria-hidden="true">●</span>
-                {speech.listening ? "듣는 중" : "말로 적기"}
-              </button>
-            ) : null}
           </div>
 
-          {speech.error ? (
-            <p className="text-sm font-semibold text-[#8a3b27]">
-              {speech.error}
-            </p>
-          ) : null}
 
           <div>
             <div className="mb-2 flex items-baseline justify-between gap-3">

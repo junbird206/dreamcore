@@ -119,9 +119,6 @@ export const styles: Array<{
   },
 ];
 
-export const starterDream =
-  "낯선 캠퍼스의 긴 복도를 걷고 있었는데, 강의실 문을 열 때마다 바다가 보였어요. 마지막 문 뒤에는 어릴 때 살던 방이 있었고, 창밖에는 아주 큰 달이 떠 있었습니다.";
-
 export const defaultStyle: DreamStyle = "dreamcore";
 
 export function isDreamStyle(value: unknown): value is DreamStyle {

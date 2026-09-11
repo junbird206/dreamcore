@@ -230,48 +230,10 @@ textarea {
   }
 }
 
-/* 음성 입력 버튼. textarea 우하단에 얹되 입력 글자를 가리지 않도록
-   textarea에 아래 여백(pb-16)을 줬다. */
-.mic-button {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid #d8cebb;
-  border-radius: 999px;
-  background: #ffffff;
-  padding: 8px 15px;
-  color: #4b4137;
-  font-size: 13px;
-  font-weight: 700;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
 
-.mic-button:hover {
-  border-color: #16796d;
-  color: #16796d;
-}
 
-.mic-button span {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #b4a795;
-  font-size: 0;
-}
 
-.mic-button.is-listening {
-  border-color: #c0392b;
-  background: #fff5f2;
-  color: #a3352a;
-}
 
-.mic-button.is-listening span {
-  background: #d0402c;
-  animation: pulse 1s ease-in-out infinite;
-}
 
 /* 화풍 칩. 각 칩이 그 화풍으로 생성한 예시 이미지 자체다 —
    설명 문장보다 결과를 직접 보여주는 편이 고르기 쉽다. */
