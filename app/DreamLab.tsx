@@ -15,6 +15,12 @@ import { useSpeechInput } from "./lib/speech";
 type ShareStatus = "idle" | "copied" | "downloaded" | "shared" | "failed";
 type ImageState = "idle" | "loading" | "ready" | "failed";
 
+/**
+ * 화풍 썸네일 캐시 무효화용. 파일명은 그대로 두고 내용만 바꾸면 재방문자가
+ * 옛 이미지를 계속 본다. 썸네일을 교체할 때마다 이 숫자를 올릴 것.
+ */
+const THUMB_VERSION = 2;
+
 declare global {
   interface Window {
     dataLayer?: unknown[][];
@@ -369,7 +375,9 @@ export function DreamLab() {
                     className="style-chip"
                     key={item.id}
                     onClick={() => setStyle(item.id)}
-                    style={{ backgroundImage: `url(/styles/${item.id}.jpg)` }}
+                    style={{
+                      backgroundImage: `url(/styles/${item.id}.jpg?v=${THUMB_VERSION})`,
+                    }}
                     title={item.hint}
                     type="button"
                   >

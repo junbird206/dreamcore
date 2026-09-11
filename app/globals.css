@@ -323,8 +323,8 @@ textarea {
 .style-chip {
   position: relative;
   display: block;
-  /* 라벨 + 설명 두 줄이 들어갈 만큼만 높인다. */
-  aspect-ratio: 2 / 1;
+  /* 151x56. 두 줄을 담되 목록이 길어지지 않게 낮게 유지한다. */
+  aspect-ratio: 8 / 3;
   overflow: hidden;
   border: 0;
   border-radius: 8px;
@@ -354,8 +354,8 @@ textarea {
 .style-chip strong,
 .style-chip small {
   position: absolute;
-  right: 9px;
-  left: 9px;
+  right: 8px;
+  left: 8px;
   z-index: 1;
   display: block;
   text-align: left;
@@ -363,20 +363,20 @@ textarea {
 }
 
 .style-chip strong {
-  bottom: 21px;
+  bottom: 18px;
   color: #ffffff;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .style-chip small {
-  bottom: 7px;
+  bottom: 5px;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 9.5px;
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
