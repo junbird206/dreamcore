@@ -364,14 +364,16 @@ export function DreamLab() {
               <div className="style-chips">
                 {styles.map((item) => (
                   <button
+                    aria-label={`${item.label} — ${item.hint}`}
                     aria-pressed={item.id === style}
                     className="style-chip"
                     key={item.id}
                     onClick={() => setStyle(item.id)}
+                    style={{ backgroundImage: `url(/styles/${item.id}.jpg)` }}
+                    title={item.hint}
                     type="button"
                   >
                     <strong>{item.label}</strong>
-                    <small>{item.hint}</small>
                   </button>
                 ))}
               </div>
