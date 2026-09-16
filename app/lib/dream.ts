@@ -127,22 +127,3 @@ export function findStyle(id: DreamStyle | null) {
   return styles.find((style) => style.id === id) ?? null;
 }
 
-/** Gemini 호출이 실패했을 때 쓰는 폴백. 화면이 비는 것보다 낫다. */
-export function createMockResult(
-  dream: string,
-  style: DreamStyle | null,
-): DreamResult {
-  const compact = dream.trim().replace(/\s+/g, " ");
-  const selected = findStyle(style);
-
-  return {
-    title: "문 너머의 달빛",
-    insight:
-      "이 꿈은 익숙한 생활권 안에서 새로운 가능성의 문을 찾고 있다는 신호처럼 읽힙니다. 반복되는 문은 선택지를, 달빛은 아직 말로 정리되지 않은 직감을 상징합니다.",
-    symbols: ["문", "바다", "달", "익숙한 방"],
-    palette: "violet, deep green, moonlit silver",
-    prompt: `Create a detailed dreamlike image based on this Korean dream: "${compact}".${
-      selected ? ` Visual style: ${selected.prompt}` : ""
-    } No text in the image.`,
-  };
-}

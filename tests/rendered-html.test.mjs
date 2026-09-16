@@ -57,9 +57,11 @@ test("keeps starter preview code removed", async () => {
 
   assert.match(page, /<DreamLab \/>/);
   assert.match(layout, /title:\s*"Dreamcore"/);
-  assert.match(dreamLib, /createMockResult/);
+  assert.match(dreamLib, /export const styles/);
   assert.match(dreamRoute, /export async function POST/);
-  assert.match(dreamRoute, /mode:\s*"mock"/);
+  // 실패 시 고정된 가짜 해몽을 돌려주던 폴백이 되살아나지 않도록 지킨다
+  assert.doesNotMatch(dreamLib, /createMockResult/);
+  assert.doesNotMatch(dreamRoute, /mock/i);
   assert.match(dreamLab, /NEXT_PUBLIC_SIGNUP_URL/);
   assert.match(dreamLab, /NEXT_PUBLIC_GA_MEASUREMENT_ID/);
   assert.match(dreamLab, /analytics_ready/);
@@ -75,7 +77,7 @@ test("keeps starter preview code removed", async () => {
   await assert.rejects(access(new URL("app/_sites-preview", projectRoot)));
 });
 
-test("returns a mock dream interpretation from the API", async () => {
+test("API 키가 없으면 가짜 해몽 대신 실패를 알린다", async () => {
   const response = await request("/api/dream", {
     method: "POST",
     headers: {
@@ -88,13 +90,12 @@ test("returns a mock dream interpretation from the API", async () => {
     }),
   });
 
-  assert.equal(response.status, 200);
+  // 테스트 환경에는 API 키가 없다. 예전에는 고정된 가짜 해몽을 돌려줬는데,
+  // 사용자가 자기 꿈이 해석된 줄 알게 되므로 실패를 그대로 알린다.
+  assert.equal(response.status, 503);
   assert.match(response.headers.get("content-type") ?? "", /^application\/json\b/i);
 
   const payload = await response.json();
-  assert.equal(payload.mode, "mock");
-  assert.ok(payload.result.title.length > 0);
-  assert.match(payload.result.prompt, /No text in the image/);
-  // 고른 화풍이 이미지 프롬프트까지 전달돼야 한다
-  assert.match(payload.result.prompt, /Dreamcore aesthetic/);
+  assert.match(payload.error, /해몽을 만들 수 없어요/);
+  assert.equal(payload.result, undefined);
 });

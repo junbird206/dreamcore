@@ -67,8 +67,9 @@ export async function generateDreamImage(
 
     if (!response.ok) {
       // 429는 대개 무료 등급이라 이미지 모델이 막힌 경우다.
+      const detail = await response.text().catch(() => "");
       console.error(
-        `[dreamcore] 이미지 생성 실패: ${response.status} ${response.statusText}`,
+        `[dreamcore] 이미지 생성 실패: ${response.status} ${response.statusText} ${detail.slice(0, 500)}`,
       );
       return null;
     }

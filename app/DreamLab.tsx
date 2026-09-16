@@ -122,7 +122,7 @@ export function DreamLab() {
       setResult(payload.result);
       track("interpretation_generated", {
         style,
-        mode: payload.mode ?? "mock",
+        mode: payload.mode ?? "gemini",
       });
 
       // 해몽을 먼저 그리고 이미지는 뒤이어 채운다. 한 번에 묶으면 사용자가
@@ -189,7 +189,7 @@ export function DreamLab() {
     try {
       await navigator.clipboard.writeText(buildShareText(result));
       setShareStatus("copied");
-      track("share_copied", { mode: "mock" });
+      track("share_copied");
     } catch {
       setShareStatus("failed");
       track("share_failed", { action: "copy" });

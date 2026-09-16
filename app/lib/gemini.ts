@@ -133,7 +133,7 @@ function parseResult(raw: unknown): DreamResult | null {
 /**
  * Gemini로 해몽을 생성한다.
  * 키가 없거나, 호출이 실패하거나, 응답 형태가 어긋나면 null을 반환한다.
- * 호출부는 null을 받으면 mock으로 폴백한다.
+ * 호출부는 null을 받으면 사용자에게 실패를 알린다.
  */
 export async function generateDreamResult(
   dream: string,
@@ -170,8 +170,10 @@ export async function generateDreamResult(
     });
 
     if (!response.ok) {
+      // 상태코드만으로는 원인을 알 수 없다. 본문에 실제 사유가 들어있다.
+      const detail = await response.text().catch(() => "");
       console.error(
-        `[dreamcore] Gemini 응답 실패: ${response.status} ${response.statusText}`,
+        `[dreamcore] Gemini 응답 실패: ${response.status} ${response.statusText} ${detail.slice(0, 500)}`,
       );
       return null;
     }

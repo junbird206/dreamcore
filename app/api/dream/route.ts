@@ -1,4 +1,4 @@
-import { createMockResult, isDreamStyle } from "../../lib/dream";
+import { isDreamStyle } from "../../lib/dream";
 import { generateDreamResult } from "../../lib/gemini";
 import { checkRateLimit } from "../../lib/rate-limit";
 
@@ -36,16 +36,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // 키가 없거나 호출이 실패하면 null이 온다. 사용자에게 에러를 띄우는 대신
-    // mock 결과로 조용히 폴백한다 — 화면이 비는 편이 손해가 크다.
     const generated = await generateDreamResult(dream, style);
 
-    return Response.json(
-      generated
-        ? { mode: "gemini", result: generated }
-        : { mode: "mock", result: createMockResult(dream, style) },
-      { headers },
-    );
+    // 실패 시 고정된 가짜 해몽을 돌려주던 폴백을 제거했다. 사용자는 자기 꿈이
+    // 해석된 줄 알지만 실제로는 남의 꿈 이야기를 받게 된다 — 빈 화면보다 나쁘다.
+    if (!generated) {
+      return Response.json(
+        { error: "지금은 해몽을 만들 수 없어요. 잠시 후 다시 시도해주세요." },
+        { status: 503, headers },
+      );
+    }
+
+    return Response.json({ mode: "gemini", result: generated }, { headers });
   } catch {
     return Response.json(
       { error: "꿈을 분석하지 못했습니다. 잠시 후 다시 시도해주세요." },
