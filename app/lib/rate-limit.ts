@@ -21,7 +21,11 @@
  */
 const LIMITS = {
   dream: { browser: 20, ip: 200 },
-  image: { browser: 4, ip: 40 },
+  // 해몽과 이미지를 함께 생성하므로 이미지 한도가 곧 사용 가능 횟수가 된다.
+  // 4회는 꿈 네 개면 소진돼 정상 사용자를 막았다. IP 천장도 함께 올린다 —
+  // CGNAT으로 IP를 공유하는 모바일 사용자가 서로의 몫을 깎아먹기 때문이다.
+  // 최악의 경우 IP 하나가 하루 약 7,000원인데, 월 지출 한도(₩50,000)가 최종 방어선이다.
+  image: { browser: 10, ip: 150 },
 } as const;
 
 export type RateLimitKind = keyof typeof LIMITS;
