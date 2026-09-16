@@ -1,8 +1,8 @@
 import type { DreamResult, DreamStyle } from "./dream";
 import { findStyle } from "./dream";
+import { callGemini } from "./gemini-call";
 
 const MODEL = "gemini-3.5-flash";
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const TIMEOUT_MS = 15_000;
 
 // 해몽은 창작에 가까운 짧은 텍스트라 깊은 사고가 필요 없다.
@@ -75,24 +75,6 @@ insight는 화풍이 아니라 **꿈 내용만** 보고 쓰세요 — 화풍은 
  * Workers 런타임과 Node 양쪽에서 API 키를 읽는다.
  * `cloudflare:workers`는 Node에서 해석되지 않으므로 동적 import로 감싼다.
  */
-async function readApiKey(): Promise<string | null> {
-  const fromProcess =
-    typeof process !== "undefined" ? process.env?.GOOGLE_AI_API_KEY : undefined;
-
-  if (fromProcess) {
-    return fromProcess;
-  }
-
-  try {
-    const { env } = await import("cloudflare:workers");
-    const value = (env as Record<string, unknown> | undefined)
-      ?.GOOGLE_AI_API_KEY;
-    return typeof value === "string" && value ? value : null;
-  } catch {
-    return null;
-  }
-}
-
 function parseResult(raw: unknown): DreamResult | null {
   if (typeof raw !== "object" || raw === null) {
     return null;
@@ -139,18 +121,10 @@ export async function generateDreamResult(
   dream: string,
   style: DreamStyle | null,
 ): Promise<DreamResult | null> {
-  const apiKey = await readApiKey();
-
-  if (!apiKey) {
-    return null;
-  }
-
   try {
-    const response = await fetch(`${ENDPOINT}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-      body: JSON.stringify({
+    const response = await callGemini(
+      MODEL,
+      {
         systemInstruction: {
           parts: [{ text: SYSTEM_INSTRUCTION }],
         },
@@ -166,8 +140,13 @@ export async function generateDreamResult(
           temperature: 1,
           thinkingConfig: { thinkingLevel: THINKING_LEVEL },
         },
-      }),
-    });
+      },
+      TIMEOUT_MS,
+    );
+
+    if (!response) {
+      return null;
+    }
 
     if (!response.ok) {
       // 상태코드만으로는 원인을 알 수 없다. 본문에 실제 사유가 들어있다.

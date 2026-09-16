@@ -1,3 +1,5 @@
+import { callGemini } from "./gemini-call";
+
 /**
  * 꿈 장면 이미지 생성.
  *
@@ -15,7 +17,6 @@
 // 해몽 텍스트가 4초라 lite여야 총 대기가 7초로 끝난다. pro면 23초다.
 // 이미지를 크게 보여주게 되면 그때 pro로 올릴 것.
 const MODEL = "gemini-3.1-flash-lite-image";
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 // 이미지 생성은 텍스트보다 오래 걸린다. 텍스트(15초)보다 넉넉히 잡는다.
 const TIMEOUT_MS = 60_000;
@@ -25,45 +26,24 @@ export type DreamImage = {
   dataUri: string;
 };
 
-async function readApiKey(): Promise<string | null> {
-  const fromProcess =
-    typeof process !== "undefined" ? process.env?.GOOGLE_AI_API_KEY : undefined;
-
-  if (fromProcess) {
-    return fromProcess;
-  }
-
-  try {
-    const { env } = await import("cloudflare:workers");
-    const value = (env as Record<string, unknown> | undefined)
-      ?.GOOGLE_AI_API_KEY;
-    return typeof value === "string" && value ? value : null;
-  } catch {
-    return null;
-  }
-}
-
 export async function generateDreamImage(
   prompt: string,
 ): Promise<DreamImage | null> {
-  const apiKey = await readApiKey();
-
-  if (!apiKey) {
-    return null;
-  }
-
   try {
-    const response = await fetch(`${ENDPOINT}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-      body: JSON.stringify({
+    const response = await callGemini(
+      MODEL,
+      {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         // 기본값은 1408x768 가로형인데 표시 타일은 세로형이라 절반이 잘린다.
         // 3:4(896x1200)로 뽑아야 잘림 없이 다 보이고, 공유 카드(1080x1350)와도 맞는다.
         generationConfig: { imageConfig: { aspectRatio: "3:4" } },
-      }),
-    });
+      },
+      TIMEOUT_MS,
+    );
+
+    if (!response) {
+      return null;
+    }
 
     if (!response.ok) {
       // 429는 대개 무료 등급이라 이미지 모델이 막힌 경우다.
