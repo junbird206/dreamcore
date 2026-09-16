@@ -99,7 +99,10 @@ export function DreamLab() {
     setImage(null);
     setImageState("idle");
     setImageError("");
-    track("dream_submit", { style, length: dream.trim().length });
+    track("dream_submit", {
+      style: style ?? "auto",
+      length: dream.trim().length,
+    });
 
     try {
       const response = await fetch("/api/dream", {
@@ -121,7 +124,7 @@ export function DreamLab() {
 
       setResult(payload.result);
       track("interpretation_generated", {
-        style,
+        style: style ?? "auto",
         mode: payload.mode ?? "gemini",
       });
 
@@ -142,7 +145,7 @@ export function DreamLab() {
 
   async function requestImage(prompt: string) {
     setImageState("loading");
-    track("image_requested", { style });
+    track("image_requested", { style: style ?? "auto" });
 
     try {
       const response = await fetch("/api/dream/image", {
