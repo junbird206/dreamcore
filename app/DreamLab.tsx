@@ -128,9 +128,8 @@ export function DreamLab() {
         mode: payload.mode ?? "mock",
       });
 
-      // 해몽을 먼저 보여주고 이미지는 뒤이어 채운다. 묶어서 기다리게 하면
-      // 사용자가 20초 넘게 빈 화면을 본다.
-      void requestImage(payload.result.prompt);
+      // 이미지는 자동 생성하지 않는다. 건당 비용이 해몽의 30배라
+      // 사용자가 결과를 보고 원할 때만 버튼으로 요청하게 한다.
     } catch (error) {
       const message =
         error instanceof Error
@@ -145,6 +144,7 @@ export function DreamLab() {
 
   async function requestImage(prompt: string) {
     setImageState("loading");
+    track("image_requested", { style });
 
     try {
       const response = await fetch("/api/dream/image", {
@@ -263,10 +263,7 @@ export function DreamLab() {
         <header className="dream-banner">
           <div className="dream-sky absolute inset-0" />
           <div className="relative z-10 mt-auto">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#9ee4d6]">
-              Google Student Ambassador 2026
-            </p>
-            <h1 className="mt-1.5 text-4xl font-semibold leading-none text-white sm:text-5xl">
+            <h1 className="text-4xl font-semibold leading-none text-white sm:text-5xl">
               Dreamcore
             </h1>
             <p className="mt-2.5 text-sm leading-6 text-white/80">
@@ -327,7 +324,7 @@ export function DreamLab() {
             disabled={dream.trim().length < 20 || isLoading}
             type="submit"
           >
-            {isLoading ? "꿈을 읽는 중" : "내 꿈속 장면 생성하기 & 해몽 듣기"}
+            {isLoading ? "꿈을 읽는 중" : "내 꿈 해몽 듣기"}
           </button>
         </form>
 
@@ -352,30 +349,6 @@ export function DreamLab() {
 
             {result ? (
               <div className="space-y-4">
-                {imageState === "ready" && image ? (
-                  // base64 data URI라 next/image 최적화가 적용되지 않는다.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt={`${result.title} — 꿈 장면 이미지`}
-                    className="generated-image-real"
-                    src={image}
-                  />
-                ) : (
-                  <div
-                    className={
-                      imageState === "failed"
-                        ? "generated-image"
-                        : "generated-image generated-image-pending"
-                    }
-                  >
-                    <p>
-                      {imageState === "failed"
-                        ? "이미지를 만들지 못했어요"
-                        : "꿈 장면 그리는 중"}
-                    </p>
-                  </div>
-                )}
-
                 <div>
                   <p className="text-sm font-semibold text-[#16796d]">
                     꿈 해몽 결과
@@ -394,6 +367,37 @@ export function DreamLab() {
                     ))}
                   </div>
                 </div>
+
+                {imageState === "ready" && image ? (
+                  // base64 data URI라 next/image 최적화가 적용되지 않는다.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    alt={`${result.title} — 꿈 장면 이미지`}
+                    className="generated-image-real"
+                    src={image}
+                  />
+                ) : imageState === "loading" ? (
+                  <div className="generated-image generated-image-pending">
+                    <p>꿈 장면 그리는 중</p>
+                  </div>
+                ) : (
+                  <div className="image-gate">
+                    <button
+                      className="image-cta"
+                      onClick={() => requestImage(result.prompt)}
+                      type="button"
+                    >
+                      {imageState === "failed"
+                        ? "다시 시도하기"
+                        : "꿈 속 이미지 생성하기"}
+                    </button>
+                    <p>
+                      {imageState === "failed"
+                        ? "이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요."
+                        : "해몽을 바탕으로 꿈속 장면을 그려드려요"}
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap gap-2">
                   <button

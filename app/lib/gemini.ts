@@ -37,7 +37,8 @@ const SYSTEM_INSTRUCTION = `당신은 꿈의 상징을 읽어주는 한국어 �
 - insight: 꿈에 대한 해석. 한국어 2~3문장. 꿈에 실제로 등장한 소재를 반드시 언급합니다.
 - symbols: 꿈에 나온 핵심 상징 3~5개. 각각 한두 단어의 한국어 명사.
 - palette: 이 꿈의 분위기를 나타내는 색 3~4개. 영어 소문자 쉼표 구분 (예: "violet, deep green, moonlit silver").
-- prompt: 이 꿈을 이미지로 생성하기 위한 영어 프롬프트. 꿈의 구체적 장면을 묘사하고 "No text in the image."로 끝냅니다.`;
+- prompt: 이 꿈을 이미지로 생성하기 위한 영어 프롬프트. 꿈에 나온 장면을 구체적으로
+  묘사하는 것이 중심이고, 화풍은 맨 뒤에 짧게만 덧붙입니다. "No text in the image."로 끝냅니다.`;
 
 function buildUserPrompt(dream: string, style: DreamStyle) {
   const selected = findStyle(style);
@@ -48,11 +49,20 @@ function buildUserPrompt(dream: string, style: DreamStyle) {
 ${dream.trim()}
 """
 
-사용자가 고른 화풍: ${selected.label} (${selected.hint})
-이미지 생성용 영어 지시: ${selected.prompt}
+사용자가 고른 화풍(참고용): ${selected.label} (${selected.hint})
+화풍 영어 표현: ${selected.prompt}
 
-prompt 필드에는 위 영어 지시를 반드시 그대로 포함시키고, 꿈의 장면 묘사와
-자연스럽게 이어 붙여 주세요. palette도 이 화풍에 맞게 정해주세요.
+prompt 필드 작성 규칙:
+1. **꿈의 내용이 주제입니다.** 꿈에 실제로 나온 장소·사물·인물·행동·색을
+   구체적으로 묘사하는 데 분량의 대부분을 쓰세요.
+2. 화풍은 **맨 뒤에 한 문장으로만** 덧붙이세요. 화풍은 "무엇을 그릴지"가 아니라
+   "어떻게 그릴지"입니다.
+3. 화풍 때문에 **꿈에 없던 소재를 절대 넣지 마세요.** 예를 들어 바닷가 꿈에
+   백룸 화풍을 골랐다면, 노란 사무실을 등장시키는 게 아니라 그 바닷가를
+   백룸 특유의 형광등·낡은 질감·불안한 공허함으로 그려야 합니다.
+4. "No text in the image."로 끝내세요.
+
+palette는 꿈의 장면에서 자연스럽게 나오는 색을 우선하고 화풍을 참고만 하세요.
 insight는 화풍이 아니라 **꿈 내용만** 보고 쓰세요 — 화풍은 사용자가 고른
 표현 방식일 뿐 꿈에서 본 것이 아닙니다.`;
 }
