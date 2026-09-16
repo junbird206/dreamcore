@@ -478,3 +478,31 @@ textarea {
 .image-cta:hover {
   background: #2b251f;
 }
+
+/* 이미지 생성 대기 중 노출하는 프로모션. 기다리는 시간이 유일하게
+   사용자의 주의가 비는 구간이다. */
+.promo-link {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #b7dfd6;
+  border-radius: 9px;
+  background: #eaf6f3;
+  padding: 0 16px;
+  color: #0f5c53;
+  font-size: 13.5px;
+  font-weight: 700;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.promo-link::after {
+  content: "→";
+  font-size: 13px;
+}
+
+.promo-link:hover {
+  border-color: #16796d;
+  background: #dff0eb;
+}

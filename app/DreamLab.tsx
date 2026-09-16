@@ -1,13 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  DreamResult,
-  DreamStyle,
-  defaultStyle,
-  findStyle,
-  styles,
-} from "./lib/dream";
+import { DreamResult, DreamStyle, findStyle, styles } from "./lib/dream";
 import { renderShareCard } from "./lib/share-card";
 
 type ShareStatus = "idle" | "copied" | "downloaded" | "shared" | "failed";
@@ -46,13 +40,15 @@ function buildShareText(result: DreamResult) {
 
 export function DreamLab() {
   const [dream, setDream] = useState("");
-  const [style, setStyle] = useState<DreamStyle>(defaultStyle);
+  // 화풍은 선택 사항이다. 고르지 않으면 모델이 꿈에 맞춰 정한다.
+  const [style, setStyle] = useState<DreamStyle | null>(null);
   const [result, setResult] = useState<DreamResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [imageState, setImageState] = useState<ImageState>("idle");
+  const [imageError, setImageError] = useState("");
 
 
   const wordCount = useMemo(() => {
@@ -102,6 +98,7 @@ export function DreamLab() {
     setErrorMessage("");
     setImage(null);
     setImageState("idle");
+    setImageError("");
     track("dream_submit", { style, length: dream.trim().length });
 
     try {
@@ -128,8 +125,9 @@ export function DreamLab() {
         mode: payload.mode ?? "mock",
       });
 
-      // 이미지는 자동 생성하지 않는다. 건당 비용이 해몽의 30배라
-      // 사용자가 결과를 보고 원할 때만 버튼으로 요청하게 한다.
+      // 해몽을 먼저 그리고 이미지는 뒤이어 채운다. 한 번에 묶으면 사용자가
+      // 10초 넘게 빈 화면을 본다.
+      void requestImage(payload.result.prompt);
     } catch (error) {
       const message =
         error instanceof Error
@@ -164,11 +162,19 @@ export function DreamLab() {
       setImage(payload.image);
       setImageState("ready");
       track("image_generated");
-    } catch {
-      // 이미지는 실패해도 해몽은 그대로 보여준다. 에러 배너는 띄우지 않는다.
+    } catch (error) {
+      // 이미지는 실패해도 해몽은 그대로 보여준다. 다만 한도 초과와 일반 실패는
+      // 사용자에게 다르게 읽혀야 하므로 서버가 준 문구를 그대로 쓴다.
+      setImageError(
+        error instanceof Error ? error.message : "이미지를 만들지 못했어요.",
+      );
       setImageState("failed");
       track("api_error", { stage: "image_api" });
     }
+  }
+
+  function handlePromoClick() {
+    track("cta_clicked", { location: "image_loading" });
   }
 
   function handleSignupClick() {
@@ -291,10 +297,11 @@ export function DreamLab() {
           <div>
             <div className="mb-2 flex items-baseline justify-between gap-3">
               <p className="text-sm font-semibold text-[#3d352c]">
-                꿈의 화풍 고르기
+                꿈의 화풍 고르기{" "}
+                <span className="font-medium text-[#8a7d6d]">(선택)</span>
               </p>
               <p className="text-xs text-[#7d7062]">
-                {wordCount}단어 · {selectedStyle.label}
+                {wordCount}단어 · {selectedStyle ? selectedStyle.label : "화풍 자동"}
               </p>
             </div>
             {/* 12개를 모두 펼치면 화면을 다 차지한다. 가로로 넘겨 보게 한다. */}
@@ -305,7 +312,11 @@ export function DreamLab() {
                   aria-pressed={item.id === style}
                   className="style-chip"
                   key={item.id}
-                  onClick={() => setStyle(item.id)}
+                  onClick={() =>
+                    setStyle((current) =>
+                      current === item.id ? null : item.id,
+                    )
+                  }
                   style={{
                     backgroundImage: `url(/styles/${item.id}.jpg?v=${THUMB_VERSION})`,
                   }}
@@ -317,6 +328,9 @@ export function DreamLab() {
                 </button>
               ))}
             </div>
+            <p className="mt-1.5 text-xs leading-5 text-[#8a7d6d]">
+              화풍을 선택하지 않아도 꿈 이미지는 정상적으로 생성됩니다.
+            </p>
           </div>
 
           <button
@@ -324,7 +338,7 @@ export function DreamLab() {
             disabled={dream.trim().length < 20 || isLoading}
             type="submit"
           >
-            {isLoading ? "꿈을 읽는 중" : "내 꿈 해몽 듣기"}
+            {isLoading ? "꿈을 읽는 중" : "내 꿈속 장면 생성하기 & 해몽 듣기"}
           </button>
         </form>
 
@@ -349,6 +363,41 @@ export function DreamLab() {
 
             {result ? (
               <div className="space-y-4">
+                {imageState === "ready" && image ? (
+                  // base64 data URI라 next/image 최적화가 적용되지 않는다.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    alt={`${result.title} — 꿈 장면 이미지`}
+                    className="generated-image-real"
+                    src={image}
+                  />
+                ) : imageState === "failed" ? (
+                  <div className="image-gate">
+                    <p>{imageError || "이미지를 만들지 못했어요."}</p>
+                    <button
+                      className="image-cta"
+                      onClick={() => requestImage(result.prompt)}
+                      type="button"
+                    >
+                      다시 시도하기
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="generated-image generated-image-pending">
+                      <p>꿈 속 모습을 구현하는 중…</p>
+                    </div>
+                    {/* 이미지가 그려지는 몇 초를 프로모션에 쓴다. */}
+                    <a
+                      className="promo-link"
+                      href={signupUrl || "#signup-url-needed"}
+                      onClick={handlePromoClick}
+                    >
+                      대학생이라면 AI 1년 혜택 받기
+                    </a>
+                  </div>
+                )}
+
                 <div>
                   <p className="text-sm font-semibold text-[#16796d]">
                     꿈 해몽 결과
@@ -368,36 +417,6 @@ export function DreamLab() {
                   </div>
                 </div>
 
-                {imageState === "ready" && image ? (
-                  // base64 data URI라 next/image 최적화가 적용되지 않는다.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt={`${result.title} — 꿈 장면 이미지`}
-                    className="generated-image-real"
-                    src={image}
-                  />
-                ) : imageState === "loading" ? (
-                  <div className="generated-image generated-image-pending">
-                    <p>꿈 장면 그리는 중</p>
-                  </div>
-                ) : (
-                  <div className="image-gate">
-                    <button
-                      className="image-cta"
-                      onClick={() => requestImage(result.prompt)}
-                      type="button"
-                    >
-                      {imageState === "failed"
-                        ? "다시 시도하기"
-                        : "꿈 속 이미지 생성하기"}
-                    </button>
-                    <p>
-                      {imageState === "failed"
-                        ? "이미지를 만들지 못했어요. 잠시 후 다시 시도해주세요."
-                        : "해몽을 바탕으로 꿈속 장면을 그려드려요"}
-                    </p>
-                  </div>
-                )}
 
                 <div className="flex flex-wrap gap-2">
                   <button

@@ -1,8 +1,4 @@
-import {
-  createMockResult,
-  defaultStyle,
-  isDreamStyle,
-} from "../../lib/dream";
+import { createMockResult, isDreamStyle } from "../../lib/dream";
 import { generateDreamResult } from "../../lib/gemini";
 import { checkRateLimit } from "../../lib/rate-limit";
 
@@ -13,7 +9,8 @@ export async function POST(request: Request) {
       style?: unknown;
     };
     const dream = payload.dream?.trim() ?? "";
-    const style = isDreamStyle(payload.style) ? payload.style : defaultStyle;
+    // 화풍은 선택 사항이다. 고르지 않으면 모델이 꿈에 맞춰 정한다.
+    const style = isDreamStyle(payload.style) ? payload.style : null;
 
     if (dream.length < 20) {
       return Response.json(

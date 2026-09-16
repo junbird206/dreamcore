@@ -40,8 +40,13 @@ const SYSTEM_INSTRUCTION = `당신은 꿈의 상징을 읽어주는 한국어 �
 - prompt: 이 꿈을 이미지로 생성하기 위한 영어 프롬프트. 꿈에 나온 장면을 구체적으로
   묘사하는 것이 중심이고, 화풍은 맨 뒤에 짧게만 덧붙입니다. "No text in the image."로 끝냅니다.`;
 
-function buildUserPrompt(dream: string, style: DreamStyle) {
+function buildUserPrompt(dream: string, style: DreamStyle | null) {
   const selected = findStyle(style);
+  const styleSection = selected
+    ? `사용자가 고른 화풍(참고용): ${selected.label} (${selected.hint})
+화풍 영어 표현: ${selected.prompt}`
+    : `사용자가 화풍을 고르지 않았습니다. 꿈의 내용과 정서에 가장 어울리는
+화풍을 직접 골라 prompt에 반영하세요.`;
 
   return `다음은 사용자가 적은 꿈입니다.
 
@@ -49,8 +54,7 @@ function buildUserPrompt(dream: string, style: DreamStyle) {
 ${dream.trim()}
 """
 
-사용자가 고른 화풍(참고용): ${selected.label} (${selected.hint})
-화풍 영어 표현: ${selected.prompt}
+${styleSection}
 
 prompt 필드 작성 규칙:
 1. **꿈의 내용이 주제입니다.** 꿈에 실제로 나온 장소·사물·인물·행동·색을
@@ -133,7 +137,7 @@ function parseResult(raw: unknown): DreamResult | null {
  */
 export async function generateDreamResult(
   dream: string,
-  style: DreamStyle,
+  style: DreamStyle | null,
 ): Promise<DreamResult | null> {
   const apiKey = await readApiKey();
 

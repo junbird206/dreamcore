@@ -37,7 +37,7 @@ test("server-renders the Dreamcore MVP shell", async () => {
   assert.match(html, /꿈에서 본 장소, 사람, 색/);
   assert.match(html, /꿈의 화풍 고르기/);
   assert.match(html, /리미널 스페이스/);
-  assert.match(html, /내 꿈 해몽 듣기/);
+  assert.match(html, /내 꿈속 장면 생성하기 &amp; 해몽 듣기/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
   // 개발 중 문구와 내부 KPI가 다시 새어나오지 않는지 지킨다
   assert.doesNotMatch(html, /Mock 모드|API 키 없이/);
