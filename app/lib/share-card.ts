@@ -146,9 +146,14 @@ export async function renderShareCard(
   let y = HEIGHT - PAD;
 
   // 아래에서 위로 쌓는다. 푸터 → 상징 → 해몽 → 제목 순.
-  ctx.font = `500 26px ${FONT_STACK}`;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
-  ctx.fillText("꿈을 적으면 AI가 해몽과 이미지를 만들어줍니다", PAD, y);
+  // 공유된 카드를 본 사람이 찾아올 수 있어야 한다. 이전 문구는 서비스를
+  // 설명하기만 하고 목적지를 알려주지 않았다.
+  // 주소는 하드코딩하지 않는다 — 커스텀 도메인을 붙여도 그대로 따라간다.
+  const host =
+    typeof window !== "undefined" ? window.location.host : "dreamcore";
+  ctx.font = `600 26px ${FONT_STACK}`;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.86)";
+  ctx.fillText(`내 꿈도 해몽해보기: ${host}`, PAD, y);
   y -= 58;
 
   ctx.font = `700 30px ${FONT_STACK}`;

@@ -416,23 +416,7 @@ textarea {
   background: #f4efe5;
 }
 
-.signup-cta {
-  display: flex;
-  min-height: 50px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: #171411;
-  padding: 0 16px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  transition: background 0.15s;
-}
 
-.signup-cta:hover {
-  background: #2b251f;
-}
 
 @media (min-width: 640px) {
   .style-rail {
@@ -505,4 +489,50 @@ textarea {
 .promo-link:hover {
   border-color: #16796d;
   background: #dff0eb;
+}
+
+/* 결과 귀속 프로모션. 방금 본 해몽·이미지의 출처를 밝히는 자리라
+   주변의 밝은 카드와 대비되게 어둡게 둔다. */
+.gemini-promo {
+  display: grid;
+  gap: 5px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1c2430 0%, #171d27 58%, #1f2a3a 100%);
+  padding: 16px 18px;
+  color: #ffffff;
+  transition: transform 0.15s;
+}
+
+.gemini-promo:hover {
+  transform: translateY(-1px);
+}
+
+.gemini-promo .brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #c9d6ea;
+}
+
+.gemini-promo .line {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.gemini-promo .offer {
+  margin-top: 3px;
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #ffffff;
+}
+
+/* 로딩 중 배너는 주 배너와 경쟁하지 않도록 힘을 뺀다. */
+.promo-link {
+  min-height: 42px;
+  font-size: 12.5px;
+  font-weight: 600;
 }

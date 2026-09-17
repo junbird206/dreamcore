@@ -180,8 +180,8 @@ export function DreamLab() {
     track("cta_clicked", { location: "image_loading" });
   }
 
-  function handleSignupClick() {
-    track("cta_clicked", { location: result ? "result" : "hero" });
+  function handleResultPromoClick() {
+    track("cta_clicked", { location: "result_attribution" });
   }
 
   async function handleCopyResult() {
@@ -395,8 +395,10 @@ export function DreamLab() {
                       className="promo-link"
                       href={signupUrl || "#signup-url-needed"}
                       onClick={handlePromoClick}
+                      rel="noopener noreferrer"
+                      target="_blank"
                     >
-                      대학생이라면 AI 1년 혜택 받기
+                      기다리는 동안 — 대학생 AI 1년 무료 혜택 보기
                     </a>
                   </div>
                 )}
@@ -419,6 +421,24 @@ export function DreamLab() {
                     ))}
                   </div>
                 </div>
+
+                {/* 방금 본 결과의 출처를 밝히는 자리다. 광고 문구보다
+                    "당신이 감탄한 그것이 이겁니다"가 강하게 먹힌다. */}
+                <a
+                  className="gemini-promo"
+                  href={signupUrl || "#signup-url-needed"}
+                  onClick={handleResultPromoClick}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <span className="brand">Google Gemini</span>
+                  <span className="line">
+                    이 해몽과 이미지, Gemini가 만들었습니다.
+                  </span>
+                  <span className="offer">
+                    대학생·대학원생은 Google AI Plus 1년 무료 →
+                  </span>
+                </a>
 
 
                 <div className="flex flex-wrap gap-2">
@@ -458,14 +478,6 @@ export function DreamLab() {
                   </p>
                 ) : null}
 
-                {/* 결과를 본 직후가 가입 의향이 가장 높은 지점이다. */}
-                <a
-                  className="signup-cta"
-                  href={signupUrl || "#signup-url-needed"}
-                  onClick={handleSignupClick}
-                >
-                  Google Student Ambassador 혜택 보러 가기
-                </a>
               </div>
             ) : null}
           </section>
