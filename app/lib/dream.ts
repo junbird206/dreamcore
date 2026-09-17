@@ -15,6 +15,8 @@ export type DreamStyle =
 export type DreamResult = {
   title: string;
   insight: string;
+  /** 꿈에서 읽히는 정서에 맞춘 한 줄 제안. 없으면 표시하지 않는다. */
+  advice: string;
   symbols: string[];
   prompt: string;
   palette: string;

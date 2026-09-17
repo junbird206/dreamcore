@@ -420,6 +420,10 @@ export function DreamLab() {
                       </span>
                     ))}
                   </div>
+
+                  {result.advice ? (
+                    <p className="dream-advice">{result.advice}</p>
+                  ) : null}
                 </div>
 
                 {/* 방금 본 결과의 출처를 밝히는 자리다. 광고 문구보다
