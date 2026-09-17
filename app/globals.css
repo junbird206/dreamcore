@@ -509,11 +509,11 @@ textarea {
   transform: translateY(-1px);
 }
 
-.gemini-promo .brand {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: #c9d6ea;
+.gemini-lockup {
+  display: block;
+  height: 20px;
+  width: auto;
+  margin-bottom: 2px;
 }
 
 .gemini-promo .line {

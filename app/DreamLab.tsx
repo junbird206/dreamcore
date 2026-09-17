@@ -431,7 +431,15 @@ export function DreamLab() {
                   rel="noopener noreferrer"
                   target="_blank"
                 >
-                  <span className="brand">Google Gemini</span>
+                  {/* 공식 락업(흰 워드마크 + 컬러 마크). 다크 카드 전용 에셋이다. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt="Google Gemini"
+                    className="gemini-lockup"
+                    height={20}
+                    src="/gemini-lockup-white.png"
+                    width={137}
+                  />
                   <span className="line">
                     이 해몽과 이미지, Gemini가 만들었습니다.
                   </span>
