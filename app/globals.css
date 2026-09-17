@@ -505,8 +505,34 @@ textarea {
   transition: transform 0.15s;
 }
 
+/* 브랜드 마크를 아주 옅게 깔아 장식으로만 쓴다. 텍스트 투명도에 영향을
+   주지 않도록 별도 레이어로 분리한다. */
+.gemini-promo::before {
+  position: absolute;
+  inset: 0;
+  background-image:
+    url("/gemini-star-white.png"),
+    url("/gemini-star-white.png");
+  background-position:
+    right -26px top -30px,
+    right 76px bottom -34px;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 128px 128px, 76px 76px;
+  opacity: 0.07;
+  content: "";
+  pointer-events: none;
+}
+
+.gemini-promo > * {
+  position: relative;
+}
+
 .gemini-promo:hover {
   transform: translateY(-1px);
+}
+
+.gemini-promo:hover::before {
+  opacity: 0.11;
 }
 
 .gemini-lockup {
