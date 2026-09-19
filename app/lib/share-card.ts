@@ -165,8 +165,21 @@ export async function renderShareCard(
   );
   y -= 62;
 
+  // 조언을 해몽과 구분되게 강조색으로 둔다. 카드에서 가장 행동을 유도하는 줄이다.
+  if (result.advice) {
+    ctx.font = `600 31px ${FONT_STACK}`;
+    const adviceLines = wrapByWidth(ctx, result.advice, maxWidth, 2);
+    ctx.fillStyle = "#b6e6db";
+    for (let i = adviceLines.length - 1; i >= 0; i -= 1) {
+      ctx.fillText(adviceLines[i], PAD, y);
+      y -= 44;
+    }
+    y -= 16;
+  }
+
+  // 조언이 들어간 만큼 해몽은 세 줄로 줄인다.
   ctx.font = `500 34px ${FONT_STACK}`;
-  const insightLines = wrapByWidth(ctx, result.insight, maxWidth, 4);
+  const insightLines = wrapByWidth(ctx, result.insight, maxWidth, 3);
   ctx.fillStyle = "#f4efe6";
   for (let i = insightLines.length - 1; i >= 0; i -= 1) {
     ctx.fillText(insightLines[i], PAD, y);
