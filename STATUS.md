@@ -14,8 +14,12 @@ https://dreamcore.junbird521.workers.dev
 호출 경로: 브라우저 → Cloudflare 워커(홍콩) → **Vercel 프록시(서울)** → Gemini
 
 ## 방금 한 일
-- 공유 카드에 조언 한 줄 추가(강조색). 자리를 만들기 위해 해몽을 4줄 → 3줄로 줄였다
-- **링크 공유 미리보기(OpenGraph) 추가.** 지금까지 og 태그가 하나도 없어 카카오톡에서
+- **GA4가 데이터를 전혀 수집하지 못하던 버그 수정.** gtag 심이 `arguments` 객체 대신
+  배열을 dataLayer에 넣고 있었다. gtag.js는 배열을 gtag 명령이 아니라 일반 데이터
+  푸시로 취급해 모든 이벤트를 무시했다 — 설치 후 줄곧 수집이 0이었다
+- 공식 스니펫과 동일하게 `function gtag(){dataLayer.push(arguments)}` 형태로 바꿨다
+- 수정 후 확인: `_ga`·`_ga_HXC99KR5CQ` 쿠키 생성, `/g/collect?tid=G-HXC99KR5CQ`
+  요청 발생, 직접 probe 응답 204
   "여기를 눌러 링크를 확인하세요"라는 기본 문구와 빈 썸네일이 나왔다
   - `og:description` = "내 꿈속 장면 다시보기+해몽하기"
   - `og:image` = `public/og.jpg` (1200x630, 78KB). 16:9로 따로 생성했다

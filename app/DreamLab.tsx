@@ -15,7 +15,7 @@ const THUMB_VERSION = 2;
 
 declare global {
   interface Window {
-    dataLayer?: unknown[][];
+    dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
   }
 }
@@ -74,11 +74,16 @@ export function DreamLab() {
     }
 
     window.dataLayer = window.dataLayer ?? [];
-    window.gtag =
-      window.gtag ??
-      ((...args: unknown[]) => {
-        window.dataLayer?.push(args);
-      });
+
+    if (!window.gtag) {
+      // 공식 스니펫과 동일하게 `arguments` 객체를 그대로 넣어야 한다.
+      // 배열로 바꿔 넣으면 gtag.js가 gtag 명령이 아니라 일반 데이터 푸시로
+      // 취급해 아무것도 전송하지 않는다.
+      window.gtag = function gtag() {
+        // eslint-disable-next-line prefer-rest-params
+        window.dataLayer?.push(arguments);
+      };
+    }
 
     window.gtag("js", new Date());
     window.gtag("config", measurementId);
